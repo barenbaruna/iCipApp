@@ -2,7 +2,7 @@
 //  iCipAppApp.swift
 //  iCipApp
 //
-//  Created by Baren Baruna Harahap on 10/03/26.
+//  App entry point — SwiftData container + routing
 //
 
 import SwiftUI
@@ -10,9 +10,13 @@ import SwiftData
 
 @main
 struct iCipAppApp: App {
+    
+    // MARK: - Properties
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Baby.self,
+            GrowthMeasurement.self,
+            FoodLog.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -23,9 +27,10 @@ struct iCipAppApp: App {
         }
     }()
 
+    // MARK: - Body
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            AppRouter()
         }
         .modelContainer(sharedModelContainer)
     }
