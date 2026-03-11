@@ -19,7 +19,7 @@ struct ProfileView: View {
     
     // MARK: - Body
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView(showsIndicators: false) {
                 if let baby = viewModel.currentBaby {
                     VStack(spacing: 24) {
