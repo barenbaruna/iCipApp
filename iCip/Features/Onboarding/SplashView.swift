@@ -32,38 +32,15 @@ struct SplashView: View {
             VStack(spacing: 28) {
                 Spacer()
                 
-                // Animated logo ring
-                ZStack {
-                    // Outer glow ring
-                    Circle()
-                        .stroke(
-                            AngularGradient(
-                                colors: [AppColors.orangeMain, AppColors.orangeLight, AppColors.orangeMain],
-                                center: .center
-                            ),
-                            lineWidth: 4
-                        )
-                        .frame(width: 140, height: 140)
-                        .rotationEffect(.degrees(ringRotation))
-                    
-                    // Logo circle
-                    Circle()
-                        .fill(AppColors.primaryGradient)
-                        .frame(width: 120, height: 120)
-                        .shadow(color: AppColors.orangeMain.opacity(0.3), radius: 20, x: 0, y: 10)
-                    
-                    // App name
-                    VStack(spacing: 2) {
-                        Image(systemName: "fork.knife.circle.fill")
-                            .font(.system(size: 36))
-                            .foregroundColor(.white)
-                        Text("iCip")
-                            .font(.system(size: 26, weight: .heavy, design: .rounded))
-                            .foregroundColor(.white)
-                    }
-                }
-                .scaleEffect(logoScale)
-                .opacity(logoOpacity)
+                // App icon
+                Image("SplashLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 120, height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .shadow(color: AppColors.orangeMain.opacity(0.3), radius: 20, x: 0, y: 10)
+                    .scaleEffect(logoScale)
+                    .opacity(logoOpacity)
                 
                 // Tagline
                 VStack(spacing: 8) {
