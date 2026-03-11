@@ -9,7 +9,8 @@ import SwiftUI
 
 struct SplashView: View {
     // MARK: - Properties
-    @State private var isActive = false
+    var onDismiss: (() -> Void)
+    
     @State private var logoScale: CGFloat = 0.6
     @State private var logoOpacity: Double = 0.0
     @State private var taglineOpacity: Double = 0.0
@@ -17,13 +18,8 @@ struct SplashView: View {
     
     // MARK: - Body
     var body: some View {
-        if isActive {
-            OnboardingFlowView()
-                .transition(.opacity)
-        } else {
-            splashContent
-                .onAppear { animateSplash() }
-        }
+        splashContent
+            .onAppear { animateSplash() }
     }
     
     // MARK: - Views
@@ -117,10 +113,10 @@ struct SplashView: View {
             taglineOpacity = 1.0
         }
         
-        // Transition to onboarding
+        // Transition to main app or onboarding via router
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             withAnimation(.easeInOut(duration: 0.5)) {
-                isActive = true
+                onDismiss()
             }
         }
     }

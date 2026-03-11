@@ -14,16 +14,27 @@ struct AppRouter: View {
     
     // MARK: - Properties
     @Query private var babies: [Baby]
+    @State private var showSplash = true
     
     // MARK: - Body
     var body: some View {
         Group {
-            if babies.isEmpty {
-                SplashView()
+            if showSplash {
+                SplashView {
+                    showSplash = false
+                }
+                .transition(.opacity)
             } else {
-                MainTabView()
+                if babies.isEmpty {
+                    OnboardingFlowView()
+                        .transition(.opacity)
+                } else {
+                    MainTabView()
+                        .transition(.opacity)
+                }
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: babies.isEmpty)
+        .animation(.easeInOut(duration: 0.5), value: showSplash)
+        .animation(.easeInOut(duration: 0.5), value: babies.isEmpty)
     }
 }
