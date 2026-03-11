@@ -74,10 +74,7 @@ struct FoodDetailView: View {
     // MARK: - Hero Header
     private var heroHeader: some View {
         GeometryReader { geometry in
-            PlaceholderFoodImage(
-                ageMinimumMonths: recipe.ageMinimumMonths,
-                height: max(geometry.size.width * 0.6, 200)
-            )
+            FoodImage(imageUrl: recipe.id, ageMinimumMonths: recipe.ageMinimumMonths, height: max(geometry.size.width * 0.6, 200))
             .overlay(alignment: .bottom) {
                 HStack(spacing: 6) {
                     Image(systemName: "clock.fill")

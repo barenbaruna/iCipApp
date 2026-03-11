@@ -19,7 +19,7 @@ struct RecipeCardView: View {
         VStack(alignment: .leading, spacing: 0) {
             // Placeholder image
             ZStack(alignment: .bottomLeading) {
-                PlaceholderFoodImage(ageMinimumMonths: recipe.ageMinimumMonths, height: 120)
+                FoodImage(imageUrl: recipe.id, ageMinimumMonths: recipe.ageMinimumMonths, height: 120)
                 
                 // Age badge (glassmorphism)
                 HStack(spacing: 4) {

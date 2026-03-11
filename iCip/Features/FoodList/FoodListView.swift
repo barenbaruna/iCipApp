@@ -95,8 +95,7 @@ struct FoodListView: View {
     // MARK: - Grid Card
     private func foodGridCard(recipe: RecipeItem) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            PlaceholderFoodImage(ageMinimumMonths: recipe.ageMinimumMonths, height: 90)
-                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 14, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 14))
+            FoodImage(imageUrl: recipe.id, ageMinimumMonths: recipe.ageMinimumMonths, height: 90)                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 14, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 14))
             
             VStack(alignment: .leading, spacing: 6) {
                 Text(recipe.name)
