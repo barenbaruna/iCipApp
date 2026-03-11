@@ -20,9 +20,10 @@ class OnboardingViewModel: ObservableObject {
     @Published var selectedAllergies: Set<String> = []
     @Published var initialWeight: String = ""
     @Published var initialHeight: String = ""
+    @Published var showAllergenSheet = false
     
     // MARK: - Constants
-    let commonAllergens = ["Telur", "Ayam", "Seafood", "Kacang", "Susu Sapi", "Kedelai"]
+    let commonAllergens = ["Susu", "Telur", "Kacang Tanah", "Kedelai", "Ikan", "Shellfish", "Kacang Pohon", "Gandum", "Wijen", "Seledri", "Mustard", "Lupin", "Moluska", "Sulfit"]
     let genders = ["Laki-laki", "Perempuan"]
     
     // MARK: - Dependencies
@@ -30,15 +31,15 @@ class OnboardingViewModel: ObservableObject {
     
     // MARK: - Computed Properties
     var isFormValid: Bool {
-        !babyName.isEmpty && Double(initialWeight) != nil && Double(initialHeight) != nil
+        !babyName.isEmpty && Double(initialWeight.replacingOccurrences(of: ",", with: ".")) != nil && Double(initialHeight.replacingOccurrences(of: ",", with: ".")) != nil
     }
     
     // MARK: - Actions
     func saveProfile() {
         guard isFormValid else { return }
         
-        let weight = Double(initialWeight) ?? 0.0
-        let height = Double(initialHeight) ?? 0.0
+        let weight = Double(initialWeight.replacingOccurrences(of: ",", with: ".")) ?? 0.0
+        let height = Double(initialHeight.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         
         let newBaby = Baby(
             name: babyName,

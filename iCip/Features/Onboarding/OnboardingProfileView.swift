@@ -91,20 +91,34 @@ struct OnboardingProfileView: View {
     }
     
     // MARK: - Date of Birth
-    private var dobInput: some View {
-        inputSection(title: "Tanggal Lahir", icon: "calendar") {
-            DatePicker("", selection: $viewModel.birthDate, in: ...Calendar.current.date(byAdding: .month, value: -5, to: Date())!, displayedComponents: .date)
+        private var dobInput: some View {
+            inputSection(title: "Tanggal Lahir", icon: "calendar") {
+                HStack {
+                    Text(viewModel.birthDate.formatted(date: .long, time: .omitted))
+                        .font(.body)
+                        .foregroundColor(AppColors.orangeMain)
+                    Spacer()
+                    Image(systemName: "calendar")
+                        .foregroundColor(AppColors.orangeMain)
+                        .font(.body)
+                }
+                .padding(14)
+                .background(AppColors.inputBackground)
+                .cornerRadius(12)
+                .overlay {
+                    DatePicker("", selection: $viewModel.birthDate, in: ...Calendar.current.date(byAdding: .month, value: -5, to: Date())!, displayedComponents: .date)
                         .datePickerStyle(.compact)
                         .labelsHidden()
                         .tint(AppColors.orangeMain)
-                        .padding(14)
-                        .background(AppColors.inputBackground)
-                        .cornerRadius(12)
+                        .opacity(0.011)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
                 }
-        .opacity(animateIn ? 1 : 0)
-        .offset(y: animateIn ? 0 : 15)
-        .animation(.easeOut(duration: 0.5).delay(0.2), value: animateIn)
-    }
+            }
+            .opacity(animateIn ? 1 : 0)
+            .offset(y: animateIn ? 0 : 15)
+            .animation(.easeOut(duration: 0.5).delay(0.2), value: animateIn)
+        }
     
     // MARK: - Gender
     private var genderInput: some View {
@@ -169,33 +183,62 @@ struct OnboardingProfileView: View {
                 .font(AppFonts.caption())
                 .foregroundColor(AppColors.textSubtleGray)
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(viewModel.commonAllergens, id: \.self) { allergen in
-                    Button(action: {
-                        viewModel.toggleAllergen(allergen)
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    }) {
-                        let isSelected = viewModel.selectedAllergies.contains(allergen)
-                        Text(allergen)
-                            .font(AppFonts.caption())
-                            .padding(.vertical, 10)
-                            .frame(maxWidth: .infinity)
-                            .background(isSelected ? AppColors.alertRedTint : AppColors.inputBackground)
-                            .foregroundColor(isSelected ? AppColors.alertRed : AppColors.textDark)
-                            .cornerRadius(10)
+            Button(action: {
+                viewModel.showAllergenSheet = true
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }) {
+                HStack {
+                    Text("Pilih riwayat alergi")
+                        .font(AppFonts.bodyRegular())
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14))
+                }
+                .foregroundColor(AppColors.textDark)
+                .padding(14)
+                .background(AppColors.inputBackground)
+                .cornerRadius(12)
+            }
+            
+            if !viewModel.selectedAllergies.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Array(viewModel.selectedAllergies).sorted(), id: \.self) { allergen in
+                            HStack(spacing: 4) {
+                                Text(allergen)
+                                    .font(AppFonts.caption())
+                                    .foregroundColor(AppColors.alertRed)
+                                    
+                                Button(action: {
+                                    viewModel.toggleAllergen(allergen)
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                }) {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(AppColors.alertRed)
+                                }
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(AppColors.alertRedTint)
+                            .cornerRadius(16)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(isSelected ? AppColors.alertRed.opacity(0.5) : Color.clear, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(AppColors.alertRed.opacity(0.5), lineWidth: 1)
                             )
-                            .scaleEffect(isSelected ? 1.05 : 1.0)
-                            .animation(.spring(response: 0.3), value: isSelected)
+                        }
                     }
                 }
+                .padding(.top, 4)
             }
         }
         .opacity(animateIn ? 1 : 0)
         .offset(y: animateIn ? 0 : 15)
         .animation(.easeOut(duration: 0.5).delay(0.35), value: animateIn)
+        .sheet(isPresented: $viewModel.showAllergenSheet) {
+            AllergenSelectionSheet(viewModel: viewModel)
+                .presentationDetents([.medium, .large])
+        }
     }
     
     // MARK: - CTA Button
@@ -245,7 +288,7 @@ struct OnboardingProfileView: View {
                 .font(AppFonts.caption())
                 .foregroundColor(AppColors.textMidGray)
             TextField(placeholder, text: text)
-                .keyboardType(.decimalPad)
+                .keyboardType(.numbersAndPunctuation)
                 .font(AppFonts.bodyRegular())
                 .foregroundColor(AppColors.inputText)
                 .padding(14)
@@ -257,5 +300,48 @@ struct OnboardingProfileView: View {
     // MARK: - Helpers
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+// MARK: - Allergen Selection Sheet
+struct AllergenSelectionSheet: View {
+    @ObservedObject var viewModel: OnboardingViewModel
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(viewModel.commonAllergens, id: \.self) { allergen in
+                    Button(action: {
+                        viewModel.toggleAllergen(allergen)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }) {
+                        HStack {
+                            Text(allergen)
+                                .font(AppFonts.bodyRegular())
+                                .foregroundColor(AppColors.textDark)
+                            Spacer()
+                            if viewModel.selectedAllergies.contains(allergen) {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(AppColors.orangeMain)
+                                    .fontWeight(.bold)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Pilih Riwayat Alergi")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Selesai") {
+                        dismiss()
+                    }
+                    .font(AppFonts.bodyRegular())
+                    .foregroundColor(AppColors.orangeMain)
+                    .fontWeight(.semibold)
+                }
+            }
+        }
     }
 }
