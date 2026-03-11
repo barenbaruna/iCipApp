@@ -93,14 +93,14 @@ struct OnboardingProfileView: View {
     // MARK: - Date of Birth
     private var dobInput: some View {
         inputSection(title: "Tanggal Lahir", icon: "calendar") {
-            DatePicker("", selection: $viewModel.birthDate, in: ...Date(), displayedComponents: .date)
-                .datePickerStyle(.compact)
-                .labelsHidden()
-                .tint(AppColors.orangeMain)
-                .padding(14)
-                .background(AppColors.inputBackground)
-                .cornerRadius(12)
-        }
+            DatePicker("", selection: $viewModel.birthDate, in: ...Calendar.current.date(byAdding: .month, value: -5, to: Date())!, displayedComponents: .date)
+                        .datePickerStyle(.compact)
+                        .labelsHidden()
+                        .tint(AppColors.orangeMain)
+                        .padding(14)
+                        .background(AppColors.inputBackground)
+                        .cornerRadius(12)
+                }
         .opacity(animateIn ? 1 : 0)
         .offset(y: animateIn ? 0 : 15)
         .animation(.easeOut(duration: 0.5).delay(0.2), value: animateIn)
