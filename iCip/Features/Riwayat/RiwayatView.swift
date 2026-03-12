@@ -51,8 +51,15 @@ struct RiwayatView: View {
                 .padding(.bottom, 100)
             }
             .background(AppColors.creamWhite.ignoresSafeArea())
-            .navigationTitle("Riwayat")
+//            .navigationTitle("Riwayat")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Riwayat")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(AppColors.textDark)
+                }
+            }
             .animation(.easeInOut(duration: 0.3), value: selectedSection)
             .onAppear {
                 viewModel.configure(modelContext: modelContext)

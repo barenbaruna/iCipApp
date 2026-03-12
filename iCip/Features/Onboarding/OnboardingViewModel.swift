@@ -21,6 +21,8 @@ class OnboardingViewModel: ObservableObject {
     @Published var initialWeight: String = ""
     @Published var initialHeight: String = ""
     @Published var showAllergenSheet = false
+    @Published var showResultSheet = false
+    @Published var savedBaby: Baby? = nil
     
     // MARK: - Constants
     let commonAllergens = ["Susu", "Telur", "Kacang Tanah", "Kedelai", "Ikan", "Shellfish", "Kacang Pohon", "Gandum", "Wijen", "Seledri", "Mustard", "Lupin", "Moluska", "Sulfit"]
@@ -35,6 +37,8 @@ class OnboardingViewModel: ObservableObject {
     }
     
     // MARK: - Actions
+    /// Creates the baby in memory and shows the result sheet.
+    /// Does NOT persist to SwiftData yet (to avoid AppRouter race condition).
     func saveProfile() {
         guard isFormValid else { return }
         
@@ -51,8 +55,17 @@ class OnboardingViewModel: ObservableObject {
         let initialMeasurement = GrowthMeasurement(weightKg: weight, heightCm: height)
         newBaby.measurements.append(initialMeasurement)
         
+        savedBaby = newBaby
+        showResultSheet = true
+    }
+    
+    /// Actually persists the baby to SwiftData. Called when the user
+    /// dismisses the result sheet via CTA.
+    func persistBaby() {
+        guard let baby = savedBaby else { return }
+        baby.hasSeenInitialAnalysis = true
         do {
-            try repository?.addBaby(newBaby)
+            try repository?.addBaby(baby)
         } catch {
             print("Failed to save baby: \(error)")
         }

@@ -31,8 +31,15 @@ struct FoodListView: View {
                 }
             }
             .background(AppColors.creamWhite.ignoresSafeArea())
-            .navigationTitle("Eksplorasi")
+//            .navigationTitle("Eksplorasi")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Eksplorasi")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(AppColors.textDark)
+                }
+            }
             .searchable(text: $viewModel.searchText, prompt: "Cari resep MPASI...")
             .onAppear {
                 viewModel.loadRecipes()

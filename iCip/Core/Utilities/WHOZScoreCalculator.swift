@@ -201,6 +201,16 @@ struct WHOZScoreCalculator {
         return "Sangat Tinggi"
     }
     
+    /// Get tint (background) color for a Z-score
+    static func tintColorForZScore(_ z: Double) -> Color {
+        if z < -3 { return AppColors.alertRedTint }
+        if z < -2 { return Color(hex: "#FFF3E0") }           // orange tint
+        if z < -1 { return AppColors.warningYellowTint }
+        if z <= 1 { return AppColors.greenTint }
+        if z <= 2 { return AppColors.blueTint }
+        return AppColors.purpleTint
+    }
+    
     /// Get the median (M) value for Z-score reference lines on the chart
     static func referenceValues(indicator: GrowthIndicator, ageMonths: Int, isMale: Bool) -> [(zScore: Double, value: Double)] {
         let zLines: [Double] = [-3, -2, -1, 0, 1, 2]

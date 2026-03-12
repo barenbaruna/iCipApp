@@ -36,8 +36,15 @@ struct ProfileView: View {
                 }
             }
             .background(AppColors.creamWhite.ignoresSafeArea())
-            .navigationTitle("Profil")
+//            .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Profil")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(AppColors.textDark)
+                }
+            }
             .alert("Reset Profil?", isPresented: $viewModel.showingResetAlert) {
                 Button("Batal", role: .cancel) { }
                 Button("Reset", role: .destructive) {
