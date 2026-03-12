@@ -6,47 +6,48 @@
 //  Apple HIG: haptic feedback, dark mode adaptive, safe area.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 // MARK: - Food Detail View
 struct FoodDetailView: View {
-    
+
     // MARK: - Properties
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: FoodDetailViewModel
     @State private var animateContent = false
-    
+
     // MARK: - Initialization
     let recipe: RecipeItem
     let conflicts: [String]
-    
+
     init(recipe: RecipeItem, conflicts: [String]) {
         self.recipe = recipe
         self.conflicts = conflicts
-        _viewModel = StateObject(wrappedValue: FoodDetailViewModel(recipe: recipe, conflicts: conflicts))
+        _viewModel = StateObject(
+            wrappedValue: FoodDetailViewModel(recipe: recipe, conflicts: conflicts))
     }
-    
+
     // MARK: - Body
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 heroHeader
-                
+
                 VStack(alignment: .leading, spacing: 24) {
                     titleSection
-                    
+
                     if !conflicts.isEmpty {
                         substitutionWarning
                     }
-                    
+
                     nutritionSection
                     Divider()
                     ingredientsSection
                     Divider()
                     preparationSection
-                    
+
                     Spacer(minLength: 20)
                     ctaButton
                 }
@@ -68,13 +69,14 @@ struct FoodDetailView: View {
                 .presentationCornerRadius(24)
         }
     }
-    
 
-    
     // MARK: - Hero Header
     private var heroHeader: some View {
         GeometryReader { geometry in
-            FoodImage(imageUrl: recipe.id, ageMinimumMonths: recipe.ageMinimumMonths, height: max(geometry.size.width * 0.6, 200))
+            FoodImage(
+                imageUrl: recipe.id, ageMinimumMonths: recipe.ageMinimumMonths,
+                height: max(geometry.size.width * 0.6, 200)
+            )
             .overlay(alignment: .bottom) {
                 HStack(spacing: 6) {
                     Image(systemName: "clock.fill")
@@ -85,14 +87,14 @@ struct FoodDetailView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(.white.opacity(0.2))
+                .background(.black.opacity(0.45))
                 .cornerRadius(20)
-                .padding(.bottom, 40)
+                .padding(.bottom, 16)
             }
         }
         .frame(height: 280)
     }
-    
+
     // MARK: - Title
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -100,7 +102,7 @@ struct FoodDetailView: View {
                 .font(AppFonts.heading1())
                 .foregroundColor(AppColors.textDark)
                 .fixedSize(horizontal: false, vertical: true)
-            
+
             Text("Tekstur: \(recipe.texture)")
                 .font(AppFonts.bodyRegular())
                 .foregroundColor(AppColors.orangeMain)
@@ -108,7 +110,7 @@ struct FoodDetailView: View {
         .opacity(animateContent ? 1 : 0)
         .offset(y: animateContent ? 0 : 15)
     }
-    
+
     // MARK: - Substitution Warning
     private var substitutionWarning: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -119,35 +121,43 @@ struct FoodDetailView: View {
                     .font(AppFonts.heading3())
                     .foregroundColor(AppColors.textDark)
             }
-            
-            Text("Resep ini mengandung **\(conflicts.joined(separator: ", "))**. Karena si kecil memiliki alergi, ganti bahan terkait dengan Tahu, Tempe, atau porsi daging yang setara.")
-                .font(AppFonts.bodyRegular())
-                .foregroundColor(AppColors.textMidGray)
-                .fixedSize(horizontal: false, vertical: true)
+
+            Text(
+                "Resep ini mengandung **\(conflicts.joined(separator: ", "))**. Karena si kecil memiliki alergi, ganti bahan terkait dengan Tahu, Tempe, atau porsi daging yang setara."
+            )
+            .font(AppFonts.bodyRegular())
+            .foregroundColor(AppColors.textMidGray)
+            .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
         .background(AppColors.warningYellowTint)
         .cornerRadius(14)
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
-    
+
     // MARK: - Nutrition Section
     private var nutritionSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Kandungan Gizi Per Porsi")
                 .font(AppFonts.heading3())
                 .foregroundColor(AppColors.textDark)
-            
+
             HStack(spacing: 12) {
-                NutritionBadge(title: "Energi", value: String(format: "%.0f", recipe.calories), unit: "kkal", color: AppColors.orangeMain, bgColor: AppColors.orangeTint)
-                NutritionBadge(title: "Protein", value: String(format: "%.1f", recipe.protein), unit: "g", color: AppColors.greenMain, bgColor: AppColors.greenTint)
-                NutritionBadge(title: "Lemak", value: String(format: "%.1f", recipe.fat), unit: "g", color: AppColors.infoBlue, bgColor: Color(light: "#E3F2FD", dark: "#1A2A3D"))
+                NutritionBadge(
+                    title: "Energi", value: String(format: "%.0f", recipe.calories), unit: "kkal",
+                    color: AppColors.orangeMain, bgColor: AppColors.orangeTint)
+                NutritionBadge(
+                    title: "Protein", value: String(format: "%.1f", recipe.protein), unit: "g",
+                    color: AppColors.greenMain, bgColor: AppColors.greenTint)
+                NutritionBadge(
+                    title: "Lemak", value: String(format: "%.1f", recipe.fat), unit: "g",
+                    color: AppColors.infoBlue, bgColor: Color(light: "#E3F2FD", dark: "#1A2A3D"))
             }
         }
         .opacity(animateContent ? 1 : 0)
         .offset(y: animateContent ? 0 : 15)
     }
-    
+
     // MARK: - Ingredients
     private var ingredientsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -158,7 +168,7 @@ struct FoodDetailView: View {
                     .font(AppFonts.heading3())
                     .foregroundColor(AppColors.textDark)
             }
-            
+
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                 ForEach(recipe.ingredients, id: \.self) { ingredient in
                     HStack(spacing: 6) {
@@ -174,7 +184,7 @@ struct FoodDetailView: View {
             }
         }
     }
-    
+
     // MARK: - Preparation
     private var preparationSection: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -185,7 +195,7 @@ struct FoodDetailView: View {
                     .font(AppFonts.heading3())
                     .foregroundColor(AppColors.textDark)
             }
-            
+
             ForEach(Array(recipe.preparationSteps.enumerated()), id: \.offset) { index, step in
                 HStack(alignment: .top, spacing: 12) {
                     ZStack {
@@ -196,7 +206,7 @@ struct FoodDetailView: View {
                             .font(.system(size: 12, weight: .bold))
                             .foregroundColor(AppColors.orangeMain)
                     }
-                    
+
                     Text(step)
                         .font(AppFonts.bodyRegular())
                         .foregroundColor(AppColors.textDark)
@@ -206,7 +216,7 @@ struct FoodDetailView: View {
             }
         }
     }
-    
+
     // MARK: - CTA Button
     private var ctaButton: some View {
         Button(action: {
@@ -228,7 +238,7 @@ struct FoodDetailView: View {
         .disabled(viewModel.isSaved)
         .padding(.bottom, 10)
     }
-    
+
     // MARK: - Log Reaction Sheet
     private var logReactionSheet: some View {
         VStack(spacing: 20) {
@@ -236,18 +246,22 @@ struct FoodDetailView: View {
                 .fill(AppColors.surfaceGray)
                 .frame(width: 40, height: 5)
                 .padding(.top, 12)
-            
+
             Text("Reaksi Si Kecil")
                 .font(AppFonts.heading2())
                 .foregroundColor(AppColors.textDark)
-            
+
             HStack(spacing: 12) {
-                reactionButton(emoji: "😋", label: "Suka", reaction: "Suka", color: AppColors.greenMain)
-                reactionButton(emoji: "😐", label: "Biasa", reaction: "Tidak Suka", color: AppColors.warningYellow)
-                reactionButton(emoji: "🤧", label: "Alergi", reaction: "Alergi", color: AppColors.alertRed)
+                reactionButton(
+                    emoji: "😋", label: "Suka", reaction: "Suka", color: AppColors.greenMain)
+                reactionButton(
+                    emoji: "😐", label: "Biasa", reaction: "Tidak Suka",
+                    color: AppColors.warningYellow)
+                reactionButton(
+                    emoji: "🤧", label: "Alergi", reaction: "Alergi", color: AppColors.alertRed)
             }
             .padding(.horizontal, 24)
-            
+
             TextField("Catatan tambahan (opsional)...", text: $viewModel.logNotes)
                 .font(AppFonts.bodyRegular())
                 .foregroundColor(AppColors.inputText)
@@ -255,7 +269,7 @@ struct FoodDetailView: View {
                 .background(AppColors.inputBackground)
                 .cornerRadius(12)
                 .padding(.horizontal, 24)
-            
+
             Button(action: {
                 viewModel.saveLog()
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -269,14 +283,16 @@ struct FoodDetailView: View {
                     .cornerRadius(12)
             }
             .padding(.horizontal, 24)
-            
+
             Spacer()
         }
         .background(AppColors.creamWhite.ignoresSafeArea())
     }
-    
+
     // MARK: - Helpers
-    private func reactionButton(emoji: String, label: String, reaction: String, color: Color) -> some View {
+    private func reactionButton(emoji: String, label: String, reaction: String, color: Color)
+        -> some View
+    {
         Button(action: {
             viewModel.logReaction = reaction
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -286,11 +302,14 @@ struct FoodDetailView: View {
                     .font(.system(size: 32))
                 Text(label)
                     .font(AppFonts.caption())
-                    .foregroundColor(viewModel.logReaction == reaction ? color : AppColors.textMidGray)
+                    .foregroundColor(
+                        viewModel.logReaction == reaction ? color : AppColors.textMidGray)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(viewModel.logReaction == reaction ? color.opacity(0.1) : AppColors.surfaceGray)
+            .background(
+                viewModel.logReaction == reaction ? color.opacity(0.1) : AppColors.surfaceGray
+            )
             .cornerRadius(14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14)

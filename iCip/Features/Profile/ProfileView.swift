@@ -37,7 +37,7 @@ struct ProfileView: View {
             }
             .background(AppColors.creamWhite.ignoresSafeArea())
             .navigationTitle("Profil")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .alert("Reset Profil?", isPresented: $viewModel.showingResetAlert) {
                 Button("Batal", role: .cancel) { }
                 Button("Reset", role: .destructive) {

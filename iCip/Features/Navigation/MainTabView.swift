@@ -28,11 +28,17 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
+            RiwayatView()
+                .tabItem {
+                    Label("Riwayat", systemImage: "chart.line.uptrend.xyaxis")
+                }
+                .tag(2)
+            
             ProfileView()
                 .tabItem {
                     Label("Profil", systemImage: "person.crop.circle.fill")
                 }
-                .tag(2)
+                .tag(3)
         }
         .tint(AppColors.orangeMain)
     }
