@@ -144,10 +144,9 @@ struct WHOZScoreCalculator {
     /// Get Z-score for Weight-for-Height
     static func weightForHeightZ(weightKg: Double, heightCm: Double, isMale: Bool) -> Double? {
         let table = isMale ? wfhBoys : wfhGirls
-        // Find closest height in table
-        let roundedHeight = Int(round(heightCm))
-        guard let lms = table.first(where: { $0.ageMonths == roundedHeight }) else { return nil }
-        return calculateZScore(value: weightKg, L: lms.L, M: lms.M, S: lms.S)
+        // Find the nearest height in the table
+        guard let nearestLMS = table.min(by: { abs(Double($0.ageMonths) - heightCm) < abs(Double($1.ageMonths) - heightCm) }) else { return nil }
+        return calculateZScore(value: weightKg, L: nearestLMS.L, M: nearestLMS.M, S: nearestLMS.S)
     }
     
     /// Get growth status from a Z-score (WHO full classification)
@@ -211,25 +210,21 @@ struct WHOZScoreCalculator {
         return AppColors.purpleTint
     }
     
-    /// Get the median (M) value for Z-score reference lines on the chart
     static func referenceValues(indicator: GrowthIndicator, ageMonths: Int, isMale: Bool) -> [(zScore: Double, value: Double)] {
         let zLines: [Double] = [-3, -2, -1, 0, 1, 2]
         let table: [LMSDataPoint]
-        let key: Int
         
         switch indicator {
         case .weightForAge:
             table = isMale ? wfaBoys : wfaGirls
-            key = ageMonths
         case .heightForAge:
             table = isMale ? hfaBoys : hfaGirls
-            key = ageMonths
         case .weightForHeight:
             table = isMale ? wfhBoys : wfhGirls
-            key = ageMonths
         }
         
-        guard let lms = table.first(where: { $0.ageMonths == key }) else { return [] }
+        // Find nearest key
+        guard let lms = table.min(by: { abs(Double($0.ageMonths) - Double(ageMonths)) < abs(Double($1.ageMonths) - Double(ageMonths)) }) else { return [] }
         
         return zLines.map { z in
             let value: Double

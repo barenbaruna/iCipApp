@@ -25,8 +25,9 @@ struct RiwayatView: View {
                 VStack(spacing: 20) {
                     // Segmented Control
                     Picker("", selection: $selectedSection) {
-                        Text("Grafik Pertumbuhan").tag(0)
-                        Text("Riwayat Makanan").tag(1)
+                        Text("Grafik").tag(0)
+                        Text("Makanan").tag(1)
+                        Text("Pertumbuhan").tag(2)
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal, 24)
@@ -38,8 +39,14 @@ struct RiwayatView: View {
                                 insertion: .move(edge: .leading).combined(with: .opacity),
                                 removal: .move(edge: .leading).combined(with: .opacity)
                             ))
-                    } else {
+                    } else if selectedSection == 1 {
                         FoodLogHistoryView(viewModel: viewModel)
+                            .transition(.asymmetric(
+                                insertion: .opacity,
+                                removal: .opacity
+                            ))
+                    } else {
+                        GrowthHistoryView(viewModel: viewModel)
                             .transition(.asymmetric(
                                 insertion: .move(edge: .trailing).combined(with: .opacity),
                                 removal: .move(edge: .trailing).combined(with: .opacity)
@@ -52,7 +59,7 @@ struct RiwayatView: View {
             }
             .background(AppColors.creamWhite.ignoresSafeArea())
 //            .navigationTitle("Riwayat")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Riwayat")

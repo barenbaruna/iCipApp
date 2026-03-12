@@ -216,6 +216,11 @@ class RiwayatViewModel: ObservableObject {
         
         do {
             try modelContext?.save()
+            
+            // Scheduling reminders after successful save
+            NotificationManager.shared.cancelGrowthReminders()
+            NotificationManager.shared.scheduleMonthlyGrowthReminders(for: baby)
+            
             loadBaby()
             inputWeight = ""
             inputHeight = ""
