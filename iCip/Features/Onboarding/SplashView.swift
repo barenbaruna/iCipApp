@@ -46,11 +46,11 @@ struct SplashView: View {
                 VStack(spacing: 8) {
                     Text("Tumbuh Baik Bersama")
                         .font(AppFonts.heading2())
-                        .foregroundColor(AppColors.textDark)
+                        .foregroundColor(Color(hex: "#1A1A1A"))
                     
                     Text("Rekomendasi MPASI personal untuk si kecil")
                         .font(AppFonts.bodyRegular())
-                        .foregroundColor(AppColors.textMidGray)
+                        .foregroundColor(Color(hex: "#5C5C5C"))
                         .multilineTextAlignment(.center)
                 }
                 .opacity(taglineOpacity)
