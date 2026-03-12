@@ -21,10 +21,12 @@ struct FoodDetailView: View {
     // MARK: - Initialization
     let recipe: RecipeItem
     let conflicts: [String]
+    var recommendation: RecommendationReason?
 
-    init(recipe: RecipeItem, conflicts: [String]) {
+    init(recipe: RecipeItem, conflicts: [String], recommendation: RecommendationReason? = nil) {
         self.recipe = recipe
         self.conflicts = conflicts
+        self.recommendation = recommendation
         _viewModel = StateObject(
             wrappedValue: FoodDetailViewModel(recipe: recipe, conflicts: conflicts))
     }
@@ -37,6 +39,10 @@ struct FoodDetailView: View {
 
                 VStack(alignment: .leading, spacing: 24) {
                     titleSection
+
+                    if let rec = recommendation {
+                        recommendationBanner(rec)
+                    }
 
                     if !conflicts.isEmpty {
                         substitutionWarning
@@ -111,6 +117,34 @@ struct FoodDetailView: View {
         }
         .opacity(animateContent ? 1 : 0)
         .offset(y: animateContent ? 0 : 15)
+    }
+
+    // MARK: - Recommendation Banner
+    private func recommendationBanner(_ rec: RecommendationReason) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: rec.isHighlyRecommended ? "star.fill" : rec.icon)
+                    .foregroundColor(rec.isHighlyRecommended ? .orange : AppColors.greenMain)
+                    .font(.system(size: 16))
+                Text(rec.isHighlyRecommended ? "Sangat Direkomendasikan" : rec.tag)
+                    .font(AppFonts.heading3())
+                    .foregroundColor(AppColors.textDark)
+            }
+            
+            Text(rec.reason)
+                .font(AppFonts.bodyRegular())
+                .foregroundColor(AppColors.textMidGray)
+                .fixedSize(horizontal: false, vertical: true)
+                .lineSpacing(3)
+        }
+        .padding(16)
+        .background(
+            rec.isHighlyRecommended
+                ? AppColors.orangeTint.opacity(0.8)
+                : AppColors.greenTint
+        )
+        .cornerRadius(14)
+        .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
 
     // MARK: - Substitution Warning

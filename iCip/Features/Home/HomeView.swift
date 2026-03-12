@@ -1,9 +1,9 @@
 //
 //  HomeView.swift
-//  iCipApp
+//  iCip
 //
-//  Home Screen — "Menu Hari Ini" with personalized greeting.
-//  Apple HIG: Safe area, staggered animations, haptic feedback.
+//  Home Screen — Personalized greeting, growth status, recommendations, nutrition chart.
+//  Apple HIG: Safe area, staggered animations, haptic feedback, NavigationStack.
 //
 
 import SwiftUI
@@ -15,7 +15,6 @@ struct HomeView: View {
     // MARK: - Properties
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = HomeViewModel()
-    @State private var selectedRecipe: RecipeItem?
     @State private var animateCards = false
     @State private var animateStats = false
     
@@ -27,12 +26,16 @@ struct HomeView: View {
                     greetingHeader
                     
                     if let baby = viewModel.currentBaby {
-                        babyStatsCard(baby: baby)
+                        statusStatsCard(baby: baby)
                     }
                     
                     recommendationSection
+                    
+                    if viewModel.currentBaby != nil {
+                        nutritionChartCard
+                    }
+                    
                     dailyTipCard
-                    textureGuideCard
                     
                     Spacer(minLength: 30)
                 }
@@ -61,34 +64,55 @@ struct HomeView: View {
                         .font(AppFonts.heading1())
                         .foregroundColor(AppColors.textDark)
                 } else {
-                Text("Menu Hari Ini")
-                    .font(AppFonts.heading1())
-                    .foregroundColor(AppColors.textDark)
-            }
+                    Text("Menu Hari Ini")
+                        .font(AppFonts.heading1())
+                        .foregroundColor(AppColors.textDark)
+                }
             }
             
             Spacer()
-            
-//            ZStack {
-//                Circle()
-//                    .fill(AppColors.primaryGradient)
-//                    .frame(width: 48, height: 48)
-//                Image(systemName: "person.crop.circle.fill")
-//                    .font(.system(size: 28))
-//                    .foregroundColor(.white)
-//            }
         }
         .padding(.horizontal, 24)
     }
     
-    // MARK: - Baby Stats Card
-    private func babyStatsCard(baby: Baby) -> some View {
-        HStack(spacing: 16) {
-            statItem(label: "Usia", value: "\(baby.ageInMonths)", unit: "bulan", icon: "calendar.circle.fill", color: AppColors.orangeMain)
+    // MARK: - Status + Stats Card (Combined)
+    private func statusStatsCard(baby: Baby) -> some View {
+        VStack(spacing: 16) {
+            // Growth status badge
+            statusBadge
             
-            if let lastMeasurement = baby.measurements.last {
-                statItem(label: "Berat", value: String(format: "%.1f", lastMeasurement.weightKg), unit: "kg", icon: "scalemass.fill", color: AppColors.greenMain)
-                statItem(label: "Tinggi", value: String(format: "%.1f", lastMeasurement.heightCm), unit: "cm", icon: "ruler.fill", color: AppColors.infoBlue)
+            // Divider
+            Rectangle()
+                .fill(AppColors.surfaceGray)
+                .frame(height: 1)
+                .padding(.horizontal, 4)
+            
+            // Baby stats row
+            HStack(spacing: 16) {
+                statItem(
+                    label: "Usia",
+                    value: "\(baby.ageInMonths)",
+                    unit: "bulan",
+                    icon: "calendar.circle.fill",
+                    color: AppColors.orangeMain
+                )
+                
+                if let lastMeasurement = baby.measurements.sorted(by: { $0.date < $1.date }).last {
+                    statItem(
+                        label: "Tinggi",
+                        value: String(format: "%.1f", lastMeasurement.heightCm),
+                        unit: "cm",
+                        icon: "ruler.fill",
+                        color: AppColors.infoBlue
+                    )
+                    statItem(
+                        label: "Berat",
+                        value: String(format: "%.1f", lastMeasurement.weightKg),
+                        unit: "kg",
+                        icon: "scalemass.fill",
+                        color: AppColors.greenMain
+                    )
+                }
             }
         }
         .padding(16)
@@ -100,6 +124,43 @@ struct HomeView: View {
         .offset(y: animateStats ? 0 : 15)
     }
     
+    // MARK: - Status Badge
+    private var statusBadge: some View {
+        Group {
+            if viewModel.hasMeasurementData {
+                let status = viewModel.overallGrowthStatus
+                HStack(spacing: 10) {
+                    Image(systemName: status.icon)
+                        .font(.system(size: 18))
+                        .foregroundColor(status.color)
+                    
+                    Text(status.rawValue)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(AppColors.textDark)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(status.tintColor)
+                .cornerRadius(12)
+            } else {
+                HStack(spacing: 10) {
+                    Image(systemName: "questionmark.circle")
+                        .font(.system(size: 18))
+                        .foregroundColor(AppColors.textSubtleGray)
+                    
+                    Text("Belum ada data pengukuran")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(AppColors.textMidGray)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(AppColors.surfaceGray)
+                .cornerRadius(12)
+            }
+        }
+    }
+    
+    // MARK: - Stat Item
     private func statItem(label: String, value: String, unit: String, icon: String, color: Color) -> some View {
         VStack(spacing: 6) {
             Image(systemName: icon)
@@ -144,8 +205,9 @@ struct HomeView: View {
                     HStack(spacing: 14) {
                         ForEach(Array(viewModel.recommendedRecipes.enumerated()), id: \.element.id) { index, recipe in
                             let conflicts = viewModel.getConflictingAllergens(for: recipe)
-                            NavigationLink(destination: FoodDetailView(recipe: recipe, conflicts: conflicts)) {
-                                RecipeCardView(recipe: recipe, conflicts: conflicts)
+                            let reason = viewModel.reason(for: recipe)
+                            NavigationLink(destination: FoodDetailView(recipe: recipe, conflicts: conflicts, recommendation: reason)) {
+                                RecipeCardView(recipe: recipe, conflicts: conflicts, recommendation: reason)
                             }
                             .simultaneousGesture(TapGesture().onEnded {
                                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -179,6 +241,15 @@ struct HomeView: View {
         .padding(.horizontal, 24)
     }
     
+    // MARK: - Nutrition Chart Card
+    private var nutritionChartCard: some View {
+        NutritionDonutChart(
+            asiPercentage: viewModel.nutrisiASI,
+            mpasiPercentage: viewModel.nutrisiMPASI,
+            ageGroupLabel: viewModel.nutrisiAgeGroup
+        )
+    }
+    
     // MARK: - Daily Tip
     private var dailyTipCard: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -205,47 +276,6 @@ struct HomeView: View {
         .background(AppColors.orangeTint.opacity(0.6))
         .cornerRadius(16)
         .padding(.horizontal, 24)
-    }
-    
-    // MARK: - Texture Guide
-    private var textureGuideCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(AppColors.infoBlue)
-                Text("Panduan Tekstur Makanan")
-                    .font(AppFonts.heading3())
-                    .foregroundColor(AppColors.textDark)
-            }
-            HStack(spacing: 10) {
-                textureChip(age: "6-8", texture: "Lumat", icon: "drop.fill")
-                textureChip(age: "9-11", texture: "Cincang", icon: "square.grid.2x2.fill")
-                textureChip(age: "12-24", texture: "Keluarga", icon: "fork.knife")
-            }
-        }
-        .padding(16)
-        .background(AppColors.cardWhite)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 10, x: 0, y: 4)
-        .padding(.horizontal, 24)
-    }
-    
-    private func textureChip(age: String, texture: String, icon: String) -> some View {
-        VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(AppColors.orangeMain)
-            Text(texture)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(AppColors.textDark)
-            Text("\(age) bln")
-                .font(.system(size: 10))
-                .foregroundColor(AppColors.textSubtleGray)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(AppColors.surfaceGray)
-        .cornerRadius(12)
     }
     
     // MARK: - Helpers

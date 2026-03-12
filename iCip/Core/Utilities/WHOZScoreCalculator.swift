@@ -53,12 +53,16 @@ enum GrowthStatus: String {
     case normal = "Normal"
     case needsAttention = "Perlu Perhatian"
     case stuntingRisk = "Risiko Stunting"
+    case overweight = "Berat Badan Lebih"
+    case obese = "Obesitas"
     
     var color: Color {
         switch self {
         case .normal: return AppColors.greenMain
         case .needsAttention: return AppColors.warningYellow
         case .stuntingRisk: return AppColors.alertRed
+        case .overweight: return AppColors.warningYellow
+        case .obese: return AppColors.alertRed
         }
     }
     
@@ -67,6 +71,8 @@ enum GrowthStatus: String {
         case .normal: return AppColors.greenTint
         case .needsAttention: return AppColors.warningYellowTint
         case .stuntingRisk: return AppColors.alertRedTint
+        case .overweight: return AppColors.warningYellowTint
+        case .obese: return AppColors.alertRedTint
         }
     }
     
@@ -75,6 +81,8 @@ enum GrowthStatus: String {
         case .normal: return "checkmark.shield.fill"
         case .needsAttention: return "exclamationmark.triangle.fill"
         case .stuntingRisk: return "exclamationmark.octagon.fill"
+        case .overweight: return "arrow.up.circle.fill"
+        case .obese: return "exclamationmark.octagon.fill"
         }
     }
     
@@ -83,6 +91,8 @@ enum GrowthStatus: String {
         case .normal: return "Pertumbuhan si kecil dalam batas normal."
         case .needsAttention: return "Ada indikator yang perlu diperhatikan. Konsultasikan dengan dokter anak."
         case .stuntingRisk: return "Ada risiko stunting. Segera konsultasikan dengan dokter anak untuk penanganan lebih lanjut."
+        case .overweight: return "Berat badan di atas normal. Perhatikan porsi dan komposisi makanan."
+        case .obese: return "Risiko obesitas. Segera konsultasikan dengan dokter anak untuk penyesuaian pola makan."
         }
     }
 }
@@ -140,18 +150,35 @@ struct WHOZScoreCalculator {
         return calculateZScore(value: weightKg, L: lms.L, M: lms.M, S: lms.S)
     }
     
-    /// Get growth status from a Z-score
+    /// Get growth status from a Z-score (WHO full classification)
     static func statusFromZScore(_ z: Double) -> GrowthStatus {
         if z < -2 { return .stuntingRisk }
         if z < -1 { return .needsAttention }
+        if z > 3 { return .obese }
+        if z > 2 { return .overweight }
         return .normal
     }
     
-    /// Get overall status from all 3 Z-scores (uses worst)
+    /// Get overall status from all 3 Z-scores.
+    /// Checks both extremes: lowest Z for undernutrition, BB/TB for overweight.
+    /// WHO: BB/TB (weight-for-height) is the primary indicator for overweight/obesity.
     static func overallStatus(wfaZ: Double?, hfaZ: Double?, wfhZ: Double?) -> GrowthStatus {
         let scores = [wfaZ, hfaZ, wfhZ].compactMap { $0 }
-        guard let worst = scores.min() else { return .normal }
-        return statusFromZScore(worst)
+        guard !scores.isEmpty else { return .normal }
+        
+        // Check for overweight/obesity first — WHO uses BB/TB (wfhZ) as primary indicator
+        if let wfh = wfhZ {
+            if wfh > 3 { return .obese }
+            if wfh > 2 { return .overweight }
+        }
+        
+        // Then check for undernutrition (worst/lowest Z-score)
+        if let worst = scores.min() {
+            if worst < -2 { return .stuntingRisk }
+            if worst < -1 { return .needsAttention }
+        }
+        
+        return .normal
     }
     
     /// Get color for a Z-score value
