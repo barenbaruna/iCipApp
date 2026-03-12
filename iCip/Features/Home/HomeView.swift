@@ -53,18 +53,18 @@ struct HomeView: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(greetingText)
-                    .font(AppFonts.caption())
+                    .font(AppFonts.heading2())
                     .foregroundColor(AppColors.textMidGray)
                 
                 if let babyName = viewModel.currentBaby?.name {
-                    Text("Menu untuk \(babyName) 🍽️")
+                    Text("Menu untuk \(babyName)")
                         .font(AppFonts.heading1())
                         .foregroundColor(AppColors.textDark)
                 } else {
-                    Text("Menu Hari Ini")
-                        .font(AppFonts.heading1())
-                        .foregroundColor(AppColors.textDark)
-                }
+                Text("Menu Hari Ini")
+                    .font(AppFonts.heading1())
+                    .foregroundColor(AppColors.textDark)
+            }
             }
             
             Spacer()
@@ -251,9 +251,9 @@ struct HomeView: View {
     // MARK: - Helpers
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        if hour < 12 { return "Selamat Pagi ☀️" }
-        else if hour < 17 { return "Selamat Siang 🌤️" }
-        else { return "Selamat Sore 🌙" }
+        if hour < 12 { return "Selamat Pagi" }
+        else if hour < 17 { return "Selamat Siang" }
+        else { return "Selamat Sore" }
     }
 }
 
