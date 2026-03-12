@@ -53,7 +53,7 @@ struct AppColors {
     )
     
     static let warmGradient = LinearGradient(
-        colors: [Color(hex: "#FFF3E0"), Color(hex: "#FFFDF9")],
+        colors: [Color(light: "#FFF3E0", dark: "#3D2B12"), Color(light: "#FFFDF9", dark: "#1C1C1E")],
         startPoint: .top,
         endPoint: .bottom
     )
