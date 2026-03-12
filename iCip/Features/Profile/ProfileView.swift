@@ -44,6 +44,15 @@ struct ProfileView: View {
                         .font(.system(size: 26, weight: .bold))
                         .foregroundColor(AppColors.textDark)
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        viewModel.showingEditSheet = true
+                    }) {
+                        Text("Edit")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(AppColors.orangeMain)
+                    }
+                }
             }
             .alert("Reset Profil?", isPresented: $viewModel.showingResetAlert) {
                 Button("Batal", role: .cancel) { }
@@ -57,6 +66,9 @@ struct ProfileView: View {
             .onAppear {
                 viewModel.configure(modelContext: modelContext)
                 withAnimation(.easeOut(duration: 0.6).delay(0.2)) { animateStats = true }
+            }
+            .sheet(isPresented: $viewModel.showingEditSheet) {
+                EditProfileView(viewModel: viewModel)
             }
         }
     }

@@ -16,6 +16,7 @@ class ProfileViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var currentBaby: Baby?
     @Published var showingResetAlert: Bool = false
+    @Published var showingEditSheet: Bool = false
     
     // MARK: - Dependencies
     private var babyRepo: BabyRepositoryProtocol?
@@ -43,6 +44,24 @@ class ProfileViewModel: ObservableObject {
             currentBaby = nil
         } catch {
             print("Reset error: \(error)")
+        }
+    }
+    
+    /// Updates the baby profile data
+    func updateBaby(name: String, dateOfBirth: Date, gender: String, allergies: [String]) {
+        guard let baby = currentBaby else { return }
+        baby.name = name
+        baby.dateOfBirth = dateOfBirth
+        baby.gender = gender
+        baby.allergies = allergies
+        
+        do {
+            try babyRepo?.updateBaby(baby)
+            // Trigger UI update using objectWillChange since we modified object properties directly
+            // when not using @Bindable in view.
+            self.objectWillChange.send()
+        } catch {
+            print("Update error: \(error)")
         }
     }
     
