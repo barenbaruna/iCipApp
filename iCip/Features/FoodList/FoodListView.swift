@@ -117,6 +117,8 @@ struct FoodListView: View {
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
 
+                // Spacer(minLength: 0)
+
                 HStack(spacing: 4) {
                     Image(systemName: "flame.fill")
                         .font(.system(size: 9))
@@ -127,6 +129,7 @@ struct FoodListView: View {
                 }
             }
             .padding(10)
+            .frame(height: 58)
         }
         .background(AppColors.cardWhite)
         .cornerRadius(14)

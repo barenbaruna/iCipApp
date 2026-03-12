@@ -51,7 +51,9 @@ struct FoodDetailView: View {
                     Spacer(minLength: 20)
                     ctaButton
                 }
-                .padding(24)
+                .padding(.horizontal, 24)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
                 .background(AppColors.creamWhite)
                 .cornerRadius(24)
                 .offset(y: -30)
