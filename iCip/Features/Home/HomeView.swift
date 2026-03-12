@@ -69,14 +69,14 @@ struct HomeView: View {
             
             Spacer()
             
-            ZStack {
-                Circle()
-                    .fill(AppColors.primaryGradient)
-                    .frame(width: 48, height: 48)
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundColor(.white)
-            }
+//            ZStack {
+//                Circle()
+//                    .fill(AppColors.primaryGradient)
+//                    .frame(width: 48, height: 48)
+//                Image(systemName: "person.crop.circle.fill")
+//                    .font(.system(size: 28))
+//                    .foregroundColor(.white)
+//            }
         }
         .padding(.horizontal, 24)
     }
@@ -264,4 +264,8 @@ struct ScaleButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(.spring(response: 0.25), value: configuration.isPressed)
     }
+}
+
+#Preview {
+    HomeView()
 }

@@ -36,7 +36,7 @@ struct SplashView: View {
                 Image("SplashLogo")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 120, height: 120)
+                    .frame(width: 175, height: 175)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .shadow(color: AppColors.orangeMain.opacity(0.3), radius: 20, x: 0, y: 10)
                     .scaleEffect(logoScale)
@@ -97,4 +97,8 @@ struct SplashView: View {
             }
         }
     }
+}
+
+#Preview {
+    SplashView(onDismiss: {})
 }

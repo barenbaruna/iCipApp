@@ -66,20 +66,26 @@ struct LegalAgreementView: View {
     // MARK: - Info Card
     private var infoCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            infoRow(icon: "info.circle.fill", color: AppColors.infoBlue,
-                text: "Informasi di dalam aplikasi iCip bersumber dari **Buku Resep Makanan Lokal Kementerian Kesehatan RI tahun 2023**. Setiap bayi memiliki kondisi yang unik.",
+            infoRow(icon: "book.pages.fill", color: AppColors.infoBlue,
+                text: "Informasi iCip merujuk pada **Buku Resep Makanan Lokal Kemenkes RI 2023** dan murni edukatif, bukan pengganti nasihat medis profesional.",
                 textColor: AppColors.textDark)
             
             Divider()
             
             infoRow(icon: "stethoscope", color: AppColors.orangeMain,
-                text: "Aplikasi ini **BUKAN** pengganti saran medis profesional. Selalu konsultasikan dengan dokter spesialis anak sebelum memperkenalkan makanan baru.",
+                text: "Kebutuhan bayi berbeda-beda. Selalu konsultasikan pola makan dengan dokter anak, khususnya jika ada **riwayat alergi** atau kondisi medis spesifik.",
                 textColor: AppColors.textMidGray)
             
             Divider()
             
-            infoRow(icon: "exclamationmark.triangle.fill", color: AppColors.warningYellow,
-                text: "Terutama jika bayi Anda memiliki **riwayat alergi**, kondisi medis khusus, atau pertumbuhan yang perlu diperhatikan.",
+            infoRow(icon: "lock.shield.fill", color: AppColors.greenMain,
+                text: "**Privasi Terpadu**. Data anak (seperti usia, fisik, & alergi) digunakan sebatas untuk personalisasi MPASI. Data disimpan *lokal* dan tidak dibagikan.",
+                textColor: AppColors.textMidGray)
+            
+            Divider()
+            
+            infoRow(icon: "checkmark.seal.fill", color: AppColors.textSubtleGray,
+                text: "Dengan melanjutkan, Anda memahami bahwa penggunaan informasi aplikasi sepenuhnya merupakan tanggung jawab pengguna secara mandiri.",
                 textColor: AppColors.textMidGray)
         }
         .padding(20)
@@ -134,4 +140,9 @@ struct LegalAgreementView: View {
             cardOffset = 0
         }
     }
+}
+
+#Preview {
+    @Previewable @State var hasAccepted = false
+    LegalAgreementView(hasAccepted: $hasAccepted)
 }
