@@ -87,10 +87,10 @@ struct RecipeCardView: View {
                     Text("Substitusi")
                         .font(.system(size: 11, weight: .medium))
                 }
-                .foregroundColor(AppColors.warningYellow)
+                .foregroundColor(AppColors.alertRed)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(AppColors.warningYellowTint)
+                .background(AppColors.alertRedTint)
                 .cornerRadius(8)
             } else {
                 HStack(spacing: 4) {
@@ -108,3 +108,4 @@ struct RecipeCardView: View {
         }
     }
 }
+
