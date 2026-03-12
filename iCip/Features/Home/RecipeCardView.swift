@@ -10,20 +10,21 @@ import SwiftUI
 
 // MARK: - Recipe Card View
 struct RecipeCardView: View {
-    
+
     // MARK: - Properties
     let recipe: RecipeItem
     let conflicts: [String]
     var recommendation: RecommendationReason?
-    
+
     // MARK: - Body
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Image with optional recommendation badge
             ZStack(alignment: .topLeading) {
                 ZStack(alignment: .bottomLeading) {
-                    FoodImage(imageUrl: recipe.id, ageMinimumMonths: recipe.ageMinimumMonths, height: 120)
-                    
+                    FoodImage(
+                        imageUrl: recipe.id, ageMinimumMonths: recipe.ageMinimumMonths, height: 120)
+
                     // Age badge (glassmorphism)
                     HStack(spacing: 4) {
                         Image(systemName: "clock.fill")
@@ -34,11 +35,11 @@ struct RecipeCardView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(.ultraThinMaterial)
+                    .background(.black.opacity(0.45))
                     .cornerRadius(8)
                     .padding(10)
                 }
-                
+
                 // Highly Recommended badge
                 if let rec = recommendation, rec.isHighlyRecommended {
                     HStack(spacing: 3) {
@@ -61,8 +62,11 @@ struct RecipeCardView: View {
                     .padding(8)
                 }
             }
-            .clipShape(UnevenRoundedRectangle(topLeadingRadius: 16, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 16))
-            
+            .clipShape(
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 16, bottomLeadingRadius: 0, bottomTrailingRadius: 0,
+                    topTrailingRadius: 16))
+
             // Content area
             VStack(alignment: .leading, spacing: 8) {
                 Text(recipe.name)
@@ -70,13 +74,17 @@ struct RecipeCardView: View {
                     .foregroundColor(AppColors.textDark)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
-                
+
                 // Nutrition chips
                 HStack(spacing: 8) {
-                    nutritionChip(icon: "flame.fill", value: "\(Int(recipe.calories))", unit: "kkal", color: AppColors.orangeMain)
-                    nutritionChip(icon: "drop.fill", value: String(format: "%.1f", recipe.protein), unit: "g", color: AppColors.infoBlue)
+                    nutritionChip(
+                        icon: "flame.fill", value: "\(Int(recipe.calories))", unit: "kkal",
+                        color: AppColors.orangeMain)
+                    nutritionChip(
+                        icon: "drop.fill", value: String(format: "%.1f", recipe.protein), unit: "g",
+                        color: AppColors.infoBlue)
                 }
-                
+
                 // Reason tag or status badge
                 if let rec = recommendation {
                     reasonTag(rec)
@@ -91,9 +99,10 @@ struct RecipeCardView: View {
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
     }
-    
+
     // MARK: - Subviews
-    private func nutritionChip(icon: String, value: String, unit: String, color: Color) -> some View {
+    private func nutritionChip(icon: String, value: String, unit: String, color: Color) -> some View
+    {
         HStack(spacing: 3) {
             Image(systemName: icon)
                 .font(.system(size: 9))
@@ -107,7 +116,7 @@ struct RecipeCardView: View {
         .background(color.opacity(0.08))
         .cornerRadius(6)
     }
-    
+
     private func reasonTag(_ rec: RecommendationReason) -> some View {
         HStack(spacing: 4) {
             Image(systemName: rec.icon)
@@ -121,7 +130,7 @@ struct RecipeCardView: View {
         .background(rec.isHighlyRecommended ? AppColors.orangeTint : AppColors.greenTint)
         .cornerRadius(8)
     }
-    
+
     private var statusBadge: some View {
         Group {
             if !conflicts.isEmpty {
