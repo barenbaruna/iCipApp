@@ -40,6 +40,17 @@ struct OnboardingProfileView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .onTapGesture { hideKeyboard() }
+        .sheet(isPresented: $viewModel.showResultSheet, onDismiss: {
+            viewModel.persistBaby()
+        }) {
+            if let baby = viewModel.savedBaby {
+                OnboardingResultView(baby: baby) {
+                    viewModel.showResultSheet = false
+                }
+                .presentationDetents([.large])
+                .interactiveDismissDisabled()
+            }
+        }
         .onAppear {
             withAnimation(.easeOut(duration: 0.5)) { animateIn = true }
         }

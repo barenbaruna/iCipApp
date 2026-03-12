@@ -41,6 +41,9 @@ struct AppColors {
     static let warningYellow = Color(hex: "#FFB300")
     static let warningYellowTint = Color(light: "#FFFDE7", dark: "#3D3614")
     static let infoBlue = Color(hex: "#1E88E5")
+    static let blueTint = Color(light: "#E3F2FD", dark: "#1A2A3D")
+    static let purpleMain = Color(hex: "#7B1FA2")
+    static let purpleTint = Color(light: "#F3E5F5", dark: "#2D1536")
     
     // MARK: - Gradients
     static let primaryGradient = LinearGradient(
