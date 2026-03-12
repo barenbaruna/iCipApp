@@ -13,6 +13,7 @@ final class Baby {
     var dateOfBirth: Date
     var gender: String // "Male" or "Female"
     var allergies: [String] // e.g., "Telur", "Ayam", "Seafood"
+    var hasSeenInitialAnalysis: Bool = false
     
     @Relationship(deleteRule: .cascade)
     var measurements: [GrowthMeasurement] = []

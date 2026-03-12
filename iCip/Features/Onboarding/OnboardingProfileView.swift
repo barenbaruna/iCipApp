@@ -17,6 +17,8 @@ struct OnboardingProfileView: View {
     @StateObject private var viewModel = OnboardingViewModel()
     @Environment(\.modelContext) private var modelContext
     @State private var animateIn = false
+    @State private var showResultSheet = false
+    @State private var savedProfileData: BabyProfileData?
     
     // MARK: - Body
     var body: some View {
@@ -91,34 +93,47 @@ struct OnboardingProfileView: View {
     }
     
     // MARK: - Date of Birth
-        private var dobInput: some View {
-            inputSection(title: "Tanggal Lahir", icon: "calendar") {
-                HStack {
-                    Text(viewModel.birthDate.formatted(date: .long, time: .omitted))
+    private var dobInput: some View {
+        inputSection(title: "Tanggal Lahir", icon: "calendar") {
+            HStack {
+                if let date = viewModel.birthDate {
+                    Text(date.formatted(date: .long, time: .omitted))
                         .font(.body)
                         .foregroundColor(AppColors.orangeMain)
-                    Spacer()
-                    Image(systemName: "calendar")
-                        .foregroundColor(AppColors.orangeMain)
-                        .font(.body)
+                } else {
+                    Text("Pilih tanggal lahir")
+                        .font(AppFonts.bodyRegular())
+                        .foregroundColor(AppColors.textMidGray)
                 }
-                .padding(14)
-                .background(AppColors.inputBackground)
-                .cornerRadius(12)
-                .overlay {
-                    DatePicker("", selection: $viewModel.birthDate, in: ...Calendar.current.date(byAdding: .month, value: -5, to: Date())!, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                        .labelsHidden()
-                        .tint(AppColors.orangeMain)
-                        .opacity(0.011)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .contentShape(Rectangle())
-                }
+                Spacer()
+                Image(systemName: "calendar")
+                    .foregroundColor(AppColors.orangeMain)
+                    .font(.body)
             }
-            .opacity(animateIn ? 1 : 0)
-            .offset(y: animateIn ? 0 : 15)
-            .animation(.easeOut(duration: 0.5).delay(0.2), value: animateIn)
+            .padding(14)
+            .background(AppColors.inputBackground)
+            .cornerRadius(12)
+            .overlay {
+                DatePicker("", selection: Binding(
+                    get: { viewModel.birthDate ?? Calendar.current.date(byAdding: .month, value: -6, to: Date())! },
+                    set: { viewModel.birthDate = $0 }
+                ), in: ...Calendar.current.date(byAdding: .month, value: -5, to: Date())!, displayedComponents: .date)
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+                    .tint(AppColors.orangeMain)
+                    .opacity(0.011)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(viewModel.birthDate == nil ? Color.clear : AppColors.orangeMain.opacity(0.4), lineWidth: 1)
+            )
         }
+        .opacity(animateIn ? 1 : 0)
+        .offset(y: animateIn ? 0 : 15)
+        .animation(.easeOut(duration: 0.5).delay(0.2), value: animateIn)
+    }
     
     // MARK: - Gender
     private var genderInput: some View {
@@ -245,7 +260,10 @@ struct OnboardingProfileView: View {
     private var ctaButton: some View {
         Button(action: {
             viewModel.repository = SwiftDataBabyRepository(context: modelContext)
-            viewModel.saveProfile()
+            if let profileData = viewModel.createProfileData() {
+                savedProfileData = profileData
+                showResultSheet = true
+            }
             UINotificationFeedbackGenerator().notificationOccurred(.success)
         }) {
             HStack(spacing: 8) {
@@ -265,6 +283,18 @@ struct OnboardingProfileView: View {
         .opacity(animateIn ? 1 : 0)
         .offset(y: animateIn ? 0 : 15)
         .animation(.easeOut(duration: 0.5).delay(0.4), value: animateIn)
+        .sheet(isPresented: $showResultSheet, onDismiss: {
+            // Save baby to SwiftData AFTER sheet is dismissed
+            if let profileData = savedProfileData {
+                viewModel.persistProfile(profileData)
+            }
+        }) {
+            if let profileData = savedProfileData {
+                OnboardingResultSheet(profileData: profileData)
+                    .presentationDetents([.large])
+                    .interactiveDismissDisabled()
+            }
+        }
     }
     
     // MARK: - Reusable Components

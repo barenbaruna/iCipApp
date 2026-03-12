@@ -15,7 +15,7 @@ class OnboardingViewModel: ObservableObject {
     
     // MARK: - Published Properties
     @Published var babyName: String = ""
-    @Published var birthDate: Date = Date()
+    @Published var birthDate: Date? = nil
     @Published var gender: String = "Laki-laki"
     @Published var selectedAllergies: Set<String> = []
     @Published var initialWeight: String = ""
@@ -31,25 +31,42 @@ class OnboardingViewModel: ObservableObject {
     
     // MARK: - Computed Properties
     var isFormValid: Bool {
-        !babyName.isEmpty && Double(initialWeight.replacingOccurrences(of: ",", with: ".")) != nil && Double(initialHeight.replacingOccurrences(of: ",", with: ".")) != nil
+        !babyName.isEmpty && birthDate != nil && Double(initialWeight.replacingOccurrences(of: ",", with: ".")) != nil && Double(initialHeight.replacingOccurrences(of: ",", with: ".")) != nil
     }
     
     // MARK: - Actions
-    func saveProfile() {
-        guard isFormValid else { return }
+    
+    /// Creates a plain BabyProfileData struct for the result sheet.
+    /// Does NOT save anything to SwiftData so AppRouter won't transition yet.
+    func createProfileData() -> BabyProfileData? {
+        guard isFormValid, let validBirthDate = birthDate else { return nil }
         
         let weight = Double(initialWeight.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         let height = Double(initialHeight.replacingOccurrences(of: ",", with: ".")) ?? 0.0
         
-        let newBaby = Baby(
+        return BabyProfileData(
             name: babyName,
-            dateOfBirth: birthDate,
+            dateOfBirth: validBirthDate,
             gender: gender,
-            allergies: Array(selectedAllergies)
+            allergies: Array(selectedAllergies),
+            weightKg: weight,
+            heightCm: height
         )
+    }
+    
+    /// Persists the profile to SwiftData. Called AFTER the result sheet is dismissed.
+    /// This triggers AppRouter to detect the baby and transition to MainTabView.
+    func persistProfile(_ profileData: BabyProfileData) {
+        let newBaby = Baby(
+            name: profileData.name,
+            dateOfBirth: profileData.dateOfBirth,
+            gender: profileData.gender,
+            allergies: profileData.allergies
+        )
+        newBaby.hasSeenInitialAnalysis = true
         
-        let initialMeasurement = GrowthMeasurement(weightKg: weight, heightCm: height)
-        newBaby.measurements.append(initialMeasurement)
+        let measurement = GrowthMeasurement(weightKg: profileData.weightKg, heightCm: profileData.heightCm)
+        newBaby.measurements.append(measurement)
         
         do {
             try repository?.addBaby(newBaby)
