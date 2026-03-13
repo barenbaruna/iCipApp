@@ -68,7 +68,7 @@ struct FoodLogHistoryView: View {
                 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Text(log.mealType)
+                        Text(normalizedMealType(log.mealType))
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(mealTypeColor(log.mealType))
                             .padding(.horizontal, 8)
@@ -153,6 +153,10 @@ struct FoodLogHistoryView: View {
     }
     
     // MARK: - Helpers
+    private func normalizedMealType(_ type: String) -> String {
+        MealTypeHelper.normalized(type)
+    }
+
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "id_ID")
@@ -161,21 +165,23 @@ struct FoodLogHistoryView: View {
     }
     
     private func mealTypeIcon(_ type: String) -> String {
-        switch type {
-        case "Sarapan": return "sunrise.fill"
-        case "Makan Siang": return "sun.max.fill"
-        case "Makan Sore": return "sunset.fill"
-        case "Selingan": return "cup.and.saucer.fill"
+        switch normalizedMealType(type) {
+        case MealTypeHelper.sarapan: return "sunrise.fill"
+        case MealTypeHelper.selinganPagi: return "cup.and.saucer.fill"
+        case MealTypeHelper.makanSiang: return "sun.max.fill"
+        case MealTypeHelper.selinganSore: return "sun.horizon.fill"
+        case MealTypeHelper.makanMalam: return "moon.stars.fill"
         default: return "fork.knife"
         }
     }
     
     private func mealTypeColor(_ type: String) -> Color {
-        switch type {
-        case "Sarapan": return AppColors.orangeMain
-        case "Makan Siang": return AppColors.greenMain
-        case "Makan Sore": return AppColors.infoBlue
-        case "Selingan": return Color(hex: "#7B1FA2")
+        switch normalizedMealType(type) {
+        case MealTypeHelper.sarapan: return AppColors.orangeMain
+        case MealTypeHelper.selinganPagi: return Color(hex: "#8D6E63")
+        case MealTypeHelper.makanSiang: return AppColors.greenMain
+        case MealTypeHelper.selinganSore: return AppColors.infoBlue
+        case MealTypeHelper.makanMalam: return Color(hex: "#3949AB")
         default: return AppColors.textMidGray
         }
     }

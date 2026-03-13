@@ -72,7 +72,7 @@ struct FoodLogDetailSheet: View {
                 .multilineTextAlignment(.center)
             
             HStack(spacing: 12) {
-                Label(foodLog.mealType, systemImage: "clock.fill")
+                Label(MealTypeHelper.normalized(foodLog.mealType), systemImage: "clock.fill")
                     .font(AppFonts.caption())
                     .foregroundColor(AppColors.textMidGray)
                 
@@ -117,8 +117,8 @@ struct FoodLogDetailSheet: View {
             
             HStack(spacing: 10) {
                 nutritionCard(label: "Kalori", value: "\(Int(recipe.calories))", unit: "kkal", color: AppColors.orangeMain, bgColor: AppColors.orangeTint)
-                nutritionCard(label: "Protein", value: String(format: "%.1f", recipe.protein), unit: "g", color: AppColors.infoBlue, bgColor: Color(light: "#E3F2FD", dark: "#1A2A3D"))
-                nutritionCard(label: "Lemak", value: String(format: "%.1f", recipe.fat), unit: "g", color: AppColors.greenMain, bgColor: AppColors.greenTint)
+                nutritionCard(label: "Protein", value: String(format: "%.1f", recipe.protein), unit: "g", color: AppColors.greenMain, bgColor: AppColors.greenTint)
+                nutritionCard(label: "Lemak", value: String(format: "%.1f", recipe.fat), unit: "g", color: AppColors.infoBlue, bgColor: Color(light: "#E3F2FD", dark: "#1A2A3D"))
             }
         }
         .padding(.horizontal, 24)

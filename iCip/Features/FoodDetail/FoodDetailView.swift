@@ -48,6 +48,10 @@ struct FoodDetailView: View {
                         substitutionWarning
                     }
 
+                    if !viewModel.retryGuidanceText.isEmpty {
+                        retryGuidanceBanner
+                    }
+
                     nutritionSection
                     Divider()
                     ingredientsSection
@@ -260,8 +264,8 @@ struct FoodDetailView: View {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }) {
             HStack(spacing: 8) {
-                Image(systemName: viewModel.isSaved ? "checkmark.circle.fill" : "plus.circle.fill")
-                Text(viewModel.isSaved ? "Sudah Dicoba ✓" : "Tandai Sudah Dicoba")
+                Image(systemName: ctaIconName)
+                Text(viewModel.actionButtonTitle)
                     .font(AppFonts.ctaText())
             }
             .foregroundColor(.white)
@@ -271,8 +275,32 @@ struct FoodDetailView: View {
             .cornerRadius(12)
             .shadow(color: AppColors.greenMain.opacity(0.3), radius: 8, x: 0, y: 4)
         }
-        .disabled(viewModel.isSaved)
         .padding(.bottom, 10)
+    }
+
+    private var ctaIconName: String {
+        if viewModel.shouldSuggestRetry {
+            return "arrow.clockwise.circle.fill"
+        }
+        return viewModel.isSaved ? "checkmark.circle.fill" : "plus.circle.fill"
+    }
+
+    private var retryGuidanceBanner: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: viewModel.latestReaction == "Alergi" ? "exclamationmark.triangle.fill" : "arrow.clockwise.circle.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(viewModel.latestReaction == "Alergi" ? AppColors.alertRed : AppColors.infoBlue)
+
+            Text(viewModel.retryGuidanceText)
+                .font(AppFonts.caption())
+                .foregroundColor(AppColors.textMidGray)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(viewModel.latestReaction == "Alergi" ? AppColors.alertRedTint : AppColors.blueTint)
+        .cornerRadius(12)
     }
 
     // MARK: - Log Reaction Sheet
@@ -295,6 +323,24 @@ struct FoodDetailView: View {
                     color: AppColors.warningYellow)
                 reactionButton(
                     emoji: "🤧", label: "Alergi", reaction: "Alergi", color: AppColors.alertRed)
+            }
+            .padding(.horizontal, 24)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Waktu Makan")
+                    .font(AppFonts.caption())
+                    .foregroundColor(AppColors.textMidGray)
+
+                Picker("Waktu Makan", selection: $viewModel.selectedMealType) {
+                    ForEach(MealTypeHelper.allOptions, id: \.self) { type in
+                        Text(type).tag(type)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(AppColors.surfaceGray)
+                .cornerRadius(10)
             }
             .padding(.horizontal, 24)
 
