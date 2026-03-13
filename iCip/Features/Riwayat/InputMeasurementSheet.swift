@@ -13,28 +13,22 @@ struct InputMeasurementSheet: View {
     @ObservedObject var viewModel: RiwayatViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showDatePicker = false
+    @FocusState private var focusedField: Field?
+    
+    private enum Field { case weight, height }
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                // Header illustration
-                ZStack {
-                    Circle()
-                        .fill(AppColors.orangeTint)
-                        .frame(width: 80, height: 80)
-                    Image(systemName: "scalemass.fill")
-                        .font(.system(size: 34))
-                        .foregroundColor(AppColors.orangeMain)
-                }
-                .padding(.top, 12)
-                
-                Text("Input Data Pertumbuhan")
-                    .font(AppFonts.heading2())
-                    .foregroundColor(AppColors.textDark)
-                
-                Text("Catat berat dan tinggi badan si kecil")
-                    .font(AppFonts.caption())
-                    .foregroundColor(AppColors.textMidGray)
+            ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    Text("Input Data Pertumbuhan")
+                        .font(AppFonts.heading2())
+                        .foregroundColor(AppColors.textDark)
+                    
+                    Text("Catat berat dan tinggi badan si kecil")
+                        .font(AppFonts.caption())
+                        .foregroundColor(AppColors.textMidGray)
                 
                 // Input fields
                 VStack(spacing: 16) {
@@ -88,9 +82,22 @@ struct InputMeasurementSheet: View {
                     )
                 }
                 
-                Spacer()
-                
-                // Save button
+                // Invisible anchor for scrolling to bottom
+                Color.clear.frame(height: 1).id("bottom")
+            }
+            .padding(24)
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    focusedField = .weight
+                    withAnimation {
+                        proxy.scrollTo("bottom", anchor: UnitPoint.bottom)
+                    }
+                }
+            }
+            } // End ScrollView
+            } // End ScrollViewReader
+            .safeAreaInset(edge: .bottom) {
+                // Save button pinned to bottom
                 Button(action: {
                     viewModel.addMeasurement()
                 }) {
@@ -110,8 +117,11 @@ struct InputMeasurementSheet: View {
                     .cornerRadius(14)
                 }
                 .disabled(viewModel.inputWeight.isEmpty || viewModel.inputHeight.isEmpty)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 8)
+                .background(AppColors.creamWhite)
             }
-            .padding(24)
+            .scrollDismissesKeyboard(.interactively)
             .background(AppColors.creamWhite.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -177,6 +187,7 @@ struct InputMeasurementSheet: View {
                     .keyboardType(.decimalPad)
                     .font(AppFonts.bodyRegular())
                     .foregroundColor(AppColors.inputText)
+                    .focused($focusedField, equals: label == "Berat Badan" ? .weight : (label == "Tinggi Badan" ? .height : nil))
                 
                 Text(unit)
                     .font(AppFonts.caption())

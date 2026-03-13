@@ -26,7 +26,7 @@ struct LegalAgreementView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     headerIcon
                     
-                    Text("Peringatan Medis")
+                    Text("Informasi Penting")
                         .font(AppFonts.heading1())
                         .foregroundColor(AppColors.textDark)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -124,6 +124,7 @@ struct LegalAgreementView: View {
             Image(systemName: icon)
                 .foregroundColor(color)
                 .font(.system(size: 20))
+                .frame(width: 28, alignment: .center)
             Text(.init(text))
                 .font(AppFonts.bodyRegular())
                 .foregroundColor(textColor)
