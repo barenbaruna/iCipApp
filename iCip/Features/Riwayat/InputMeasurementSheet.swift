@@ -12,6 +12,7 @@ struct InputMeasurementSheet: View {
     
     @ObservedObject var viewModel: RiwayatViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var showDatePicker = false
     
     var body: some View {
         NavigationView {
@@ -35,30 +36,39 @@ struct InputMeasurementSheet: View {
                     .font(AppFonts.caption())
                     .foregroundColor(AppColors.textMidGray)
                 
-                // Date picker
-                VStack(spacing: 8) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "calendar")
-                            .foregroundColor(AppColors.orangeMain)
-                        Text("Tanggal Pengukuran")
-                            .font(AppFonts.caption())
-                            .foregroundColor(AppColors.textMidGray)
-                        Spacer()
-                    }
-                    
-                    DatePicker(
-                        "",
-                        selection: $viewModel.selectedDate,
-                        in: (viewModel.currentBaby?.dateOfBirth ?? Date())...Date(),
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-                    .tint(AppColors.orangeMain)
-                }
-                
                 // Input fields
                 VStack(spacing: 16) {
+                    // Date picker
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar")
+                                .font(.system(size: 12))
+                                .foregroundColor(AppColors.orangeMain)
+                            Text("Tanggal Pengukuran")
+                                .font(AppFonts.caption())
+                                .foregroundColor(AppColors.textMidGray)
+                        }
+                        
+                        Button(action: {
+                            showDatePicker = true
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        }) {
+                            HStack {
+                                Text(viewModel.selectedDate.formatted(date: .long, time: .omitted))
+                                    .font(AppFonts.bodyRegular())
+                                    .foregroundColor(AppColors.orangeMain)
+                                Spacer()
+                                Image(systemName: "calendar")
+                                    .foregroundColor(AppColors.orangeMain)
+                                    .font(.body)
+                            }
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(AppColors.inputBackground)
+                            .cornerRadius(12)
+                        }
+                    }
+                    
                     inputField(
                         icon: "scalemass.fill",
                         label: "Berat Badan",
@@ -112,6 +122,40 @@ struct InputMeasurementSheet: View {
                             .font(.system(size: 22))
                     }
                 }
+            }
+            .sheet(isPresented: $showDatePicker) {
+                VStack(spacing: 0) {
+                    HStack {
+                        Text("Tanggal Pengukuran")
+                            .font(AppFonts.heading2())
+                            .foregroundColor(AppColors.textDark)
+                        Spacer()
+                        Button("Selesai") {
+                            showDatePicker = false
+                        }
+                        .font(AppFonts.bodyRegular())
+                        .fontWeight(.semibold)
+                        .foregroundColor(AppColors.orangeMain)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 20)
+                    .padding(.bottom, 8)
+                    
+                    DatePicker(
+                        "",
+                        selection: $viewModel.selectedDate,
+                        in: (viewModel.currentBaby?.dateOfBirth ?? Date())...Date(),
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .tint(AppColors.orangeMain)
+                    .padding(.horizontal, 16)
+                    
+                    Spacer()
+                }
+                .background(AppColors.creamWhite.ignoresSafeArea())
+                .presentationDetents([.medium])
+                .presentationCornerRadius(24)
             }
         }
     }
