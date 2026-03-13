@@ -3,7 +3,7 @@
 //  iCipApp
 //
 //  WHO LMS reference tables and Z-score calculation.
-//  Data source: WHO Child Growth Standards (0–60 months).
+//  Data source: WHO Child Growth Standards (embedded tables currently cover 0–24 months).
 //
 
 import SwiftUI

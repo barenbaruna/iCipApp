@@ -45,22 +45,36 @@ class OnboardingResultViewModel: ObservableObject {
     @Published var baby: Baby
     @Published var showRecipeDetail = false
     @Published var selectedRecipe: RecipeItem?
+
+    var ageInMonths: Int {
+        baby.ageInMonths
+    }
+
+    var isComplementaryFeedingAge: Bool {
+        ageInMonths >= 6 && ageInMonths <= 23
+    }
     
     // MARK: - Computed: Z-Scores
     var isMale: Bool { baby.gender == "Laki-laki" }
+
+    var latestMeasurement: GrowthMeasurement? {
+        baby.measurements.sorted(by: { $0.date < $1.date }).last
+    }
     
     var weightForAgeZ: Double? {
-        guard let m = baby.measurements.last else { return nil }
-        return WHOZScoreCalculator.weightForAgeZ(weightKg: m.weightKg, ageMonths: baby.ageInMonths, isMale: isMale)
+        guard let m = latestMeasurement else { return nil }
+        let measurementAgeMonths = baby.ageInMonths(at: m.date)
+        return WHOZScoreCalculator.weightForAgeZ(weightKg: m.weightKg, ageMonths: measurementAgeMonths, isMale: isMale)
     }
     
     var heightForAgeZ: Double? {
-        guard let m = baby.measurements.last else { return nil }
-        return WHOZScoreCalculator.heightForAgeZ(heightCm: m.heightCm, ageMonths: baby.ageInMonths, isMale: isMale)
+        guard let m = latestMeasurement else { return nil }
+        let measurementAgeMonths = baby.ageInMonths(at: m.date)
+        return WHOZScoreCalculator.heightForAgeZ(heightCm: m.heightCm, ageMonths: measurementAgeMonths, isMale: isMale)
     }
     
     var weightForHeightZ: Double? {
-        guard let m = baby.measurements.last else { return nil }
+        guard let m = latestMeasurement else { return nil }
         return WHOZScoreCalculator.weightForHeightZ(weightKg: m.weightKg, heightCm: m.heightCm, isMale: isMale)
     }
     
@@ -84,24 +98,40 @@ class OnboardingResultViewModel: ObservableObject {
     
     // MARK: - Contextual Message
     var contextualMessage: String {
-        let z = worstZScore
-        if z < -2 {
+        switch overallStatus {
+        case .stuntingRisk:
             return "Kami mendeteksi risiko stunting. Jangan khawatir — app ini akan membantumu setiap hari 💪"
-        } else if z < -1 {
+        case .needsAttention:
             return "Pertumbuhan si kecil perlu perhatian lebih. Yuk tingkatkan asupan gizinya!"
-        } else if z <= 1 {
+        case .normal:
             return "Si kecil tumbuh dengan baik! Pertahankan pola makan bergizi seimbang ya, Bunda 🎉"
-        } else if z <= 2 {
+        case .overweight:
             return "Pertumbuhan si kecil di atas rata-rata! Pastikan keseimbangan nutrisinya terjaga ya 🌟"
-        } else {
+        case .obese:
             return "Berat badan si kecil cukup tinggi. Yuk perhatikan porsi dan variasi makanannya 🍎"
         }
     }
     
     // MARK: - Nutrition Targets
     var nutrientTargets: [NutrientTarget] {
-        let age = baby.ageInMonths
+        let age = ageInMonths
         var targets: [NutrientTarget]
+
+        if age < 6 {
+            return [
+                NutrientTarget(name: "ASI/Formula", icon: "drop.fill", value: "Utama sesuai kebutuhan"),
+                NutrientTarget(name: "Makanan Padat", icon: "fork.knife", value: "Belum direkomendasikan"),
+                NutrientTarget(name: "Kesiapan MPASI", icon: "calendar", value: "Mulai sekitar 6 bulan"),
+            ]
+        }
+
+        if age > 23 {
+            return [
+                NutrientTarget(name: "Cakupan Onboarding", icon: "info.circle", value: "Dirancang untuk usia 6-23 bulan"),
+                NutrientTarget(name: "Status Saat Ini", icon: "calendar", value: "Usia di atas rentang onboarding"),
+                NutrientTarget(name: "Lanjutan", icon: "house.fill", value: "Gunakan rekomendasi di Beranda"),
+            ]
+        }
         
         if age <= 8 {
             targets = [
@@ -153,13 +183,22 @@ class OnboardingResultViewModel: ObservableObject {
     
     // MARK: - Food Recommendations
     var foodRecommendations: [FoodRecommendation] {
-        let age = baby.ageInMonths
+        let age = ageInMonths
+
+        guard isComplementaryFeedingAge else {
+            return []
+        }
+
         guard let recipes = try? LocalRecipeRepository.shared.getRecipes(forAgeMonths: age) else {
             return []
         }
+
+        let safeRecipes = recipes.filter { recipe in
+            Set(recipe.allergens).isDisjoint(with: Set(baby.allergies))
+        }
         
         // Sort by nutritional priority based on Z-scores
-        let sorted = recipes.sorted { a, b in
+        let sorted = safeRecipes.sorted { a, b in
             priorityScore(for: a) > priorityScore(for: b)
         }
         
@@ -175,6 +214,25 @@ class OnboardingResultViewModel: ObservableObject {
                 recipeItem: recipe
             )
         }
+    }
+
+    var foodRecommendationNotice: String {
+        if ageInMonths < 6 {
+            return "Si kecil masih di bawah 6 bulan. Fokus pada ASI/formula dulu, MPASI mulai sekitar usia 6 bulan."
+        }
+
+        if ageInMonths > 23 {
+            return "Onboarding Result dirancang untuk usia 6-23 bulan. Rekomendasi lanjutan tersedia di beranda."
+        }
+
+        if foodRecommendations.isEmpty {
+            if !baby.allergies.isEmpty {
+                return "Belum ada menu awal yang aman setelah filter alergi. Silakan cek alergi profil atau gunakan menu alternatif di beranda."
+            }
+            return "Belum ada rekomendasi menu untuk profil ini. Coba perbarui data profil dan pengukuran."
+        }
+
+        return ""
     }
     
     private func priorityScore(for recipe: RecipeItem) -> Double {
@@ -237,7 +295,25 @@ class OnboardingResultViewModel: ObservableObject {
     
     // MARK: - Feeding Schedule
     var feedingSchedules: [FeedingScheduleInfo] {
-        let age = baby.ageInMonths
+        let age = ageInMonths
+
+        if age < 6 {
+            return [FeedingScheduleInfo(
+                ageRange: "0-5 bulan",
+                meals: "ASI/formula sesuai kebutuhan",
+                snacks: "Belum perlu MPASI",
+                texture: "Belum perlu makanan padat sampai sekitar 6 bulan"
+            )]
+        }
+
+        if age > 23 {
+            return [FeedingScheduleInfo(
+                ageRange: "24+ bulan",
+                meals: "Di luar cakupan onboarding",
+                snacks: "Lihat rekomendasi lanjutan",
+                texture: "Gunakan panduan personal di beranda"
+            )]
+        }
         
         if age <= 8 {
             return [FeedingScheduleInfo(

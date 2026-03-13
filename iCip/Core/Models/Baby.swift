@@ -34,5 +34,12 @@ final class Baby {
         let components = calendar.dateComponents([.month], from: dateOfBirth, to: Date())
         return components.month ?? 0
     }
+
+    /// Returns age in completed months at a specific date.
+    func ageInMonths(at date: Date) -> Int {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.month], from: dateOfBirth, to: date)
+        return max(0, components.month ?? 0)
+    }
 }
 

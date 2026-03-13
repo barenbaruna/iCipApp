@@ -59,12 +59,14 @@ class RiwayatViewModel: ObservableObject {
     // MARK: - Z-Score Calculations
     var weightForAgeZ: Double? {
         guard let m = latestMeasurement, let baby = currentBaby else { return nil }
-        return WHOZScoreCalculator.weightForAgeZ(weightKg: m.weightKg, ageMonths: baby.ageInMonths, isMale: isMale)
+        let measurementAgeMonths = baby.ageInMonths(at: m.date)
+        return WHOZScoreCalculator.weightForAgeZ(weightKg: m.weightKg, ageMonths: measurementAgeMonths, isMale: isMale)
     }
     
     var heightForAgeZ: Double? {
         guard let m = latestMeasurement, let baby = currentBaby else { return nil }
-        return WHOZScoreCalculator.heightForAgeZ(heightCm: m.heightCm, ageMonths: baby.ageInMonths, isMale: isMale)
+        let measurementAgeMonths = baby.ageInMonths(at: m.date)
+        return WHOZScoreCalculator.heightForAgeZ(heightCm: m.heightCm, ageMonths: measurementAgeMonths, isMale: isMale)
     }
     
     var weightForHeightZ: Double? {

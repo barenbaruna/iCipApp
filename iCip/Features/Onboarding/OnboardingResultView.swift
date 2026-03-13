@@ -225,12 +225,33 @@ struct OnboardingResultView: View {
     // MARK: - Section 3: Food Recommendations
     private var foodRecommendationSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionHeader(title: "Rekomendasi Menu Awal", icon: "fork.knife")
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 14) {
-                    ForEach(viewModel.foodRecommendations) { food in
-                        foodCard(food: food)
+            sectionHeader(
+                title: viewModel.isComplementaryFeedingAge ? "Rekomendasi Menu Awal" : "Kesiapan MPASI",
+                icon: "fork.knife")
+
+            if viewModel.foodRecommendations.isEmpty {
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: viewModel.ageInMonths < 6 ? "info.circle.fill" : "exclamationmark.triangle.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(viewModel.ageInMonths < 6 ? AppColors.infoBlue : AppColors.warningYellow)
+
+                    Text(viewModel.foodRecommendationNotice)
+                        .font(AppFonts.caption())
+                        .foregroundColor(AppColors.textMidGray)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineSpacing(3)
+
+                    Spacer(minLength: 0)
+                }
+                .padding(14)
+                .background(viewModel.ageInMonths < 6 ? AppColors.blueTint : AppColors.warningYellowTint)
+                .cornerRadius(12)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 14) {
+                        ForEach(viewModel.foodRecommendations) { food in
+                            foodCard(food: food)
+                        }
                     }
                 }
             }
