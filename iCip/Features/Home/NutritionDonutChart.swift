@@ -10,17 +10,17 @@ import SwiftUI
 
 // MARK: - Nutrition Donut Chart
 struct NutritionDonutChart: View {
-    
+
     // MARK: - Properties
-    let asiPercentage: Double   // e.g. 0.7
-    let mpasiPercentage: Double // e.g. 0.3
-    let ageGroupLabel: String   // e.g. "6-8 bulan"
-    
+    let asiPercentage: Double  // e.g. 0.7
+    let mpasiPercentage: Double  // e.g. 0.3
+    let ageGroupLabel: String  // e.g. "6-8 bulan"
+
     @State private var animateChart = false
-    
+
     // MARK: - Body
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack(spacing: 6) {
                 Image(systemName: "chart.pie.fill")
@@ -30,11 +30,12 @@ struct NutritionDonutChart: View {
                     .font(AppFonts.heading3())
                     .foregroundColor(AppColors.textDark)
             }
-            
+
             Text("Kebutuhan nutrisi sesuai umur anak (\(ageGroupLabel))")
                 .font(AppFonts.caption())
                 .foregroundColor(AppColors.textMidGray)
-            
+                .padding(.bottom, 12)
+
             // Chart + Legend
             HStack(spacing: 24) {
                 // Donut chart
@@ -42,15 +43,19 @@ struct NutritionDonutChart: View {
                     // MPASI arc (bottom layer)
                     Circle()
                         .trim(from: 0, to: animateChart ? 1.0 : 0)
-                        .stroke(AppColors.greenMain, style: StrokeStyle(lineWidth: 28, lineCap: .round))
+                        .stroke(
+                            AppColors.greenMain, style: StrokeStyle(lineWidth: 28, lineCap: .round)
+                        )
                         .rotationEffect(.degrees(-90))
-                    
+
                     // ASI arc (top layer)
                     Circle()
                         .trim(from: 0, to: animateChart ? asiPercentage : 0)
-                        .stroke(AppColors.orangeMain, style: StrokeStyle(lineWidth: 28, lineCap: .round))
+                        .stroke(
+                            AppColors.orangeMain, style: StrokeStyle(lineWidth: 28, lineCap: .round)
+                        )
                         .rotationEffect(.degrees(-90))
-                    
+
                     // Center label
                     VStack(spacing: 2) {
                         Text("\(Int(mpasiPercentage * 100))%")
@@ -62,7 +67,7 @@ struct NutritionDonutChart: View {
                     }
                 }
                 .frame(width: 130, height: 130)
-                
+
                 // Legend
                 VStack(alignment: .leading, spacing: 14) {
                     legendItem(
@@ -75,7 +80,7 @@ struct NutritionDonutChart: View {
                         label: "MP-ASI",
                         percentage: Int(mpasiPercentage * 100)
                     )
-                    
+
                     // Contextual note
                     Text("Sumber: Kemenkes RI")
                         .font(.system(size: 9))
@@ -95,14 +100,14 @@ struct NutritionDonutChart: View {
             }
         }
     }
-    
+
     // MARK: - Legend Item
     private func legendItem(color: Color, label: String, percentage: Int) -> some View {
         HStack(spacing: 8) {
             RoundedRectangle(cornerRadius: 4)
                 .fill(color)
                 .frame(width: 14, height: 14)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.system(size: 13, weight: .semibold))

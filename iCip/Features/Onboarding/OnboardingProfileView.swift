@@ -18,6 +18,7 @@ struct OnboardingProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var animateIn = false
     @State private var showDatePicker = false
+    @State private var hasSelectedDate = false
 
     // MARK: - Body
     var body: some View {
@@ -116,12 +117,20 @@ struct OnboardingProfileView: View {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             }) {
                 HStack {
-                    Text(viewModel.birthDate.formatted(date: .long, time: .omitted))
-                        .font(AppFonts.bodyRegular())
-                        .foregroundColor(AppColors.orangeMain)
+                    if hasSelectedDate {
+                        Text(viewModel.birthDate.formatted(date: .long, time: .omitted))
+                            .font(AppFonts.bodyRegular())
+                            .foregroundColor(AppColors.orangeMain)
+                    } else {
+                        Text("Masukkan tanggal lahir si kecil")
+                            .font(AppFonts.bodyRegular())
+                            .foregroundColor(AppColors.textSubtleGray)
+                    }
                     Spacer()
                     Image(systemName: "calendar")
-                        .foregroundColor(AppColors.orangeMain)
+                        .foregroundColor(
+                            hasSelectedDate ? AppColors.orangeMain : AppColors.textSubtleGray
+                        )
                         .font(.body)
                 }
                 .padding(14)
@@ -136,6 +145,7 @@ struct OnboardingProfileView: View {
                             .foregroundColor(AppColors.textDark)
                         Spacer()
                         Button("Selesai") {
+                            hasSelectedDate = true
                             showDatePicker = false
                         }
                         .font(AppFonts.bodyRegular())

@@ -6,17 +6,17 @@
 //  Apple HIG: haptic feedback, dark mode, safe area.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 // MARK: - Profile View
 struct ProfileView: View {
-    
+
     // MARK: - Properties
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = ProfileViewModel()
     @State private var animateStats = false
-    
+
     // MARK: - Body
     var body: some View {
         NavigationView {
@@ -36,7 +36,7 @@ struct ProfileView: View {
                 }
             }
             .background(AppColors.creamWhite.ignoresSafeArea())
-//            .navigationTitle("Profil")
+            //            .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -55,7 +55,7 @@ struct ProfileView: View {
                 }
             }
             .alert("Reset Profil?", isPresented: $viewModel.showingResetAlert) {
-                Button("Batal", role: .cancel) { }
+                Button("Batal", role: .cancel) {}
                 Button("Reset", role: .destructive) {
                     viewModel.resetProfile()
                     UINotificationFeedbackGenerator().notificationOccurred(.warning)
@@ -72,7 +72,7 @@ struct ProfileView: View {
             }
         }
     }
-    
+
     // MARK: - Profile Header
     private func profileHeader(baby: Baby) -> some View {
         VStack(spacing: 16) {
@@ -87,39 +87,52 @@ struct ProfileView: View {
                     .font(.system(size: 44))
             }
             .padding(.top, 12)
-            
+
             VStack(spacing: 4) {
                 Text(baby.name)
                     .font(AppFonts.heading1())
                     .foregroundColor(AppColors.textDark)
-                
+
                 HStack(spacing: 8) {
                     Label("\(baby.ageInMonths) bulan", systemImage: "calendar")
                     Text("•")
-                    Label(baby.gender, systemImage: baby.gender == "Laki-laki" ? "figure.stand" : "figure.stand.dress")
+                    Label(
+                        baby.gender,
+                        systemImage: baby.gender == "Laki-laki"
+                            ? "figure.stand" : "figure.stand.dress")
                 }
                 .font(AppFonts.bodyRegular())
                 .foregroundColor(AppColors.textMidGray)
             }
         }
     }
-    
+
     // MARK: - Stats Grid
     private func statsGrid(baby: Baby) -> some View {
         HStack(spacing: 14) {
             if let measurement = viewModel.latestMeasurement {
-                profileStatCard(icon: "scalemass.fill", value: String(format: "%.1f", measurement.weightKg), unit: "kg", label: "Berat Badan", color: AppColors.greenMain, bgColor: AppColors.greenTint)
-                profileStatCard(icon: "ruler.fill", value: String(format: "%.1f", measurement.heightCm), unit: "cm", label: "Tinggi Badan", color: AppColors.infoBlue, bgColor: Color(light: "#E3F2FD", dark: "#1A2A3D"))
+                profileStatCard(
+                    icon: "scalemass.fill", value: String(format: "%.1f", measurement.weightKg),
+                    unit: "kg", label: "Berat Badan", color: AppColors.greenMain,
+                    bgColor: AppColors.greenTint)
+                profileStatCard(
+                    icon: "ruler.fill", value: String(format: "%.1f", measurement.heightCm),
+                    unit: "cm", label: "Tinggi Badan", color: AppColors.infoBlue,
+                    bgColor: Color(light: "#E3F2FD", dark: "#1A2A3D"))
             }
-            profileStatCard(icon: "fork.knife", value: "\(viewModel.foodLogCount)", unit: "resep", label: "Sudah Dicoba", color: AppColors.orangeMain, bgColor: AppColors.orangeTint)
+            profileStatCard(
+                icon: "fork.knife", value: "\(viewModel.foodLogCount)", unit: "resep",
+                label: "Sudah Dicoba", color: AppColors.orangeMain, bgColor: AppColors.orangeTint)
         }
         .padding(.horizontal, 24)
         .opacity(animateStats ? 1 : 0)
         .offset(y: animateStats ? 0 : 15)
     }
-    
-    private func profileStatCard(icon: String, value: String, unit: String, label: String, color: Color, bgColor: Color) -> some View {
-        VStack(spacing: 8) {
+
+    private func profileStatCard(
+        icon: String, value: String, unit: String, label: String, color: Color, bgColor: Color
+    ) -> some View {
+        VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 18))
                 .foregroundColor(color)
@@ -134,13 +147,14 @@ struct ProfileView: View {
             Text(label)
                 .font(.system(size: 10))
                 .foregroundColor(AppColors.textMidGray)
+                .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity, minHeight: 80)
+        .padding(.vertical, 12)
         .background(bgColor)
         .cornerRadius(14)
     }
-    
+
     // MARK: - Allergy Section
     private func allergySection(baby: Baby) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -152,7 +166,7 @@ struct ProfileView: View {
                     .font(AppFonts.heading3())
                     .foregroundColor(AppColors.textDark)
             }
-            
+
             if baby.allergies.isEmpty {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")
@@ -187,7 +201,7 @@ struct ProfileView: View {
         }
         .padding(.horizontal, 24)
     }
-    
+
     // MARK: - Growth Section
     private var growthSection: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -198,12 +212,12 @@ struct ProfileView: View {
                     .font(AppFonts.heading3())
                     .foregroundColor(AppColors.textDark)
             }
-            
+
             ZStack {
                 RoundedRectangle(cornerRadius: 14)
                     .fill(AppColors.surfaceGray)
                     .frame(height: 150)
-                
+
                 VStack(spacing: 8) {
                     Image(systemName: "chart.xyaxis.line")
                         .font(.system(size: 30))
@@ -216,7 +230,7 @@ struct ProfileView: View {
         }
         .padding(.horizontal, 24)
     }
-    
+
     // MARK: - Reset Button
     private var resetButton: some View {
         Button(action: {
@@ -237,7 +251,7 @@ struct ProfileView: View {
         .padding(.horizontal, 24)
         .padding(.top, 20)
     }
-    
+
     // MARK: - Empty State
     private var emptyState: some View {
         VStack(spacing: 16) {

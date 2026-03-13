@@ -6,43 +6,50 @@
 //  Apple HIG: Safe area, staggered animations, haptic feedback, NavigationStack.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 // MARK: - Home View
 struct HomeView: View {
-    
+
     // MARK: - Properties
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = HomeViewModel()
     @State private var animateCards = false
     @State private var animateStats = false
-    
+
     // MARK: - Body
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
                     greetingHeader
-                    
+
                     if let baby = viewModel.currentBaby {
                         statusStatsCard(baby: baby)
                     }
-                    
+
                     recommendationSection
-                    
+
                     if viewModel.currentBaby != nil {
                         nutritionChartCard
                     }
-                    
+
                     dailyTipCard
-                    
+
                     Spacer(minLength: 30)
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 100)
+                .padding(.top, -40)
+                .padding(.bottom, 32)
             }
             .background(AppColors.creamWhite.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Color.clear.frame(width: 1, height: 1)
+                    //                        .margin(atTop: -10)
+                }
+            }
             .onAppear {
                 viewModel.setupConfigs(modelContext: modelContext)
                 withAnimation(.easeOut(duration: 0.4).delay(0.2)) { animateStats = true }
@@ -50,7 +57,7 @@ struct HomeView: View {
             }
         }
     }
-    
+
     // MARK: - Greeting Header
     private var greetingHeader: some View {
         HStack(alignment: .top) {
@@ -58,7 +65,7 @@ struct HomeView: View {
                 Text(greetingText)
                     .font(AppFonts.heading2())
                     .foregroundColor(AppColors.textMidGray)
-                
+
                 if let babyName = viewModel.currentBaby?.name {
                     Text("Menu untuk \(babyName)")
                         .font(AppFonts.heading1())
@@ -69,24 +76,24 @@ struct HomeView: View {
                         .foregroundColor(AppColors.textDark)
                 }
             }
-            
+
             Spacer()
         }
         .padding(.horizontal, 24)
     }
-    
+
     // MARK: - Status + Stats Card (Combined)
     private func statusStatsCard(baby: Baby) -> some View {
         VStack(spacing: 16) {
             // Growth status badge
             statusBadge
-            
+
             // Divider
             Rectangle()
                 .fill(AppColors.surfaceGray)
                 .frame(height: 1)
                 .padding(.horizontal, 4)
-            
+
             // Baby stats row
             HStack(spacing: 16) {
                 statItem(
@@ -96,7 +103,7 @@ struct HomeView: View {
                     icon: "calendar.circle.fill",
                     color: AppColors.orangeMain
                 )
-                
+
                 if let lastMeasurement = baby.measurements.sorted(by: { $0.date < $1.date }).last {
                     statItem(
                         label: "Tinggi",
@@ -123,7 +130,7 @@ struct HomeView: View {
         .opacity(animateStats ? 1 : 0)
         .offset(y: animateStats ? 0 : 15)
     }
-    
+
     // MARK: - Status Badge
     private var statusBadge: some View {
         Group {
@@ -133,7 +140,7 @@ struct HomeView: View {
                     Image(systemName: status.icon)
                         .font(.system(size: 18))
                         .foregroundColor(status.color)
-                    
+
                     Text(status.rawValue)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundColor(AppColors.textDark)
@@ -147,7 +154,7 @@ struct HomeView: View {
                     Image(systemName: "questionmark.circle")
                         .font(.system(size: 18))
                         .foregroundColor(AppColors.textSubtleGray)
-                    
+
                     Text("Belum ada data pengukuran")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(AppColors.textMidGray)
@@ -159,9 +166,11 @@ struct HomeView: View {
             }
         }
     }
-    
+
     // MARK: - Stat Item
-    private func statItem(label: String, value: String, unit: String, icon: String, color: Color) -> some View {
+    private func statItem(label: String, value: String, unit: String, icon: String, color: Color)
+        -> some View
+    {
         VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 18))
@@ -175,7 +184,7 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity)
     }
-    
+
     // MARK: - Recommendation Carousel
     private var recommendationSection: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -188,34 +197,43 @@ struct HomeView: View {
                         .font(AppFonts.caption())
                         .foregroundColor(AppColors.textMidGray)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "sparkles")
                     .foregroundColor(AppColors.orangeMain)
                     .font(.system(size: 20))
                     .symbolEffect(.pulse, isActive: animateCards)
             }
             .padding(.horizontal, 24)
-            
+
             if viewModel.recommendedRecipes.isEmpty {
                 emptyStateCard
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 14) {
-                        ForEach(Array(viewModel.recommendedRecipes.enumerated()), id: \.element.id) { index, recipe in
+                        ForEach(Array(viewModel.recommendedRecipes.enumerated()), id: \.element.id)
+                        { index, recipe in
                             let conflicts = viewModel.getConflictingAllergens(for: recipe)
                             let reason = viewModel.reason(for: recipe)
-                            NavigationLink(destination: FoodDetailView(recipe: recipe, conflicts: conflicts, recommendation: reason)) {
-                                RecipeCardView(recipe: recipe, conflicts: conflicts, recommendation: reason)
+                            NavigationLink(
+                                destination: FoodDetailView(
+                                    recipe: recipe, conflicts: conflicts, recommendation: reason)
+                            ) {
+                                RecipeCardView(
+                                    recipe: recipe, conflicts: conflicts, recommendation: reason)
                             }
-                            .simultaneousGesture(TapGesture().onEnded {
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                            })
+                            .simultaneousGesture(
+                                TapGesture().onEnded {
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                }
+                            )
                             .buttonStyle(ScaleButtonStyle())
                             .opacity(animateCards ? 1 : 0)
                             .offset(y: animateCards ? 0 : 20)
-                            .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.08), value: animateCards)
+                            .animation(
+                                .easeOut(duration: 0.4).delay(Double(index) * 0.08),
+                                value: animateCards)
                         }
                     }
                     .padding(.horizontal, 24)
@@ -224,7 +242,7 @@ struct HomeView: View {
             }
         }
     }
-    
+
     private var emptyStateCard: some View {
         VStack(spacing: 12) {
             Image(systemName: "tray.fill")
@@ -240,7 +258,7 @@ struct HomeView: View {
         .cornerRadius(16)
         .padding(.horizontal, 24)
     }
-    
+
     // MARK: - Nutrition Chart Card
     private var nutritionChartCard: some View {
         NutritionDonutChart(
@@ -249,7 +267,7 @@ struct HomeView: View {
             ageGroupLabel: viewModel.nutrisiAgeGroup
         )
     }
-    
+
     // MARK: - Daily Tip
     private var dailyTipCard: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -261,15 +279,17 @@ struct HomeView: View {
                     .foregroundColor(AppColors.orangeMain)
                     .font(.system(size: 20))
             }
-            
+
             VStack(alignment: .leading, spacing: 6) {
                 Text("Tips 1000 HPK")
                     .font(AppFonts.heading3())
                     .foregroundColor(AppColors.textDark)
-                Text("Pastikan selalu menjaga kebersihan tangan dan peralatan sebelum menyiapkan MPASI. Pemberian yang konsisten menurunkan risiko stunting secara signifikan.")
-                    .font(AppFonts.caption())
-                    .foregroundColor(AppColors.textMidGray)
-                    .lineSpacing(4)
+                Text(
+                    "Pastikan selalu menjaga kebersihan tangan dan peralatan sebelum menyiapkan MPASI. Pemberian yang konsisten menurunkan risiko stunting secara signifikan."
+                )
+                .font(AppFonts.caption())
+                .foregroundColor(AppColors.textMidGray)
+                .lineSpacing(4)
             }
         }
         .padding(16)
@@ -277,13 +297,17 @@ struct HomeView: View {
         .cornerRadius(16)
         .padding(.horizontal, 24)
     }
-    
+
     // MARK: - Helpers
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        if hour < 12 { return "Selamat Pagi" }
-        else if hour < 17 { return "Selamat Siang" }
-        else { return "Selamat Sore" }
+        if hour < 12 {
+            return "Selamat Pagi"
+        } else if hour < 17 {
+            return "Selamat Siang"
+        } else {
+            return "Selamat Sore"
+        }
     }
 }
 
