@@ -26,7 +26,6 @@ struct ProfileView: View {
                         profileHeader(baby: baby)
                         statsGrid(baby: baby)
                         allergySection(baby: baby)
-                        growthSection
                         resetButton
                     }
                     .padding(.top, 8)
@@ -202,34 +201,6 @@ struct ProfileView: View {
         .padding(.horizontal, 24)
     }
 
-    // MARK: - Growth Section
-    private var growthSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 6) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .foregroundColor(AppColors.greenMain)
-                Text("Grafik Pertumbuhan")
-                    .font(AppFonts.heading3())
-                    .foregroundColor(AppColors.textDark)
-            }
-
-            ZStack {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(AppColors.surfaceGray)
-                    .frame(height: 150)
-
-                VStack(spacing: 8) {
-                    Image(systemName: "chart.xyaxis.line")
-                        .font(.system(size: 30))
-                        .foregroundColor(AppColors.textSubtleGray)
-                    Text("Grafik Z-Score (Coming Soon)")
-                        .font(AppFonts.caption())
-                        .foregroundColor(AppColors.textSubtleGray)
-                }
-            }
-        }
-        .padding(.horizontal, 24)
-    }
 
     // MARK: - Reset Button
     private var resetButton: some View {

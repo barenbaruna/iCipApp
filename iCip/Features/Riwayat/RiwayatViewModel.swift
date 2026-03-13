@@ -22,6 +22,7 @@ class RiwayatViewModel: ObservableObject {
     // Input fields
     @Published var inputWeight: String = ""
     @Published var inputHeight: String = ""
+    @Published var selectedDate: Date = Date()
     
     // MARK: - Dependencies
     private var babyRepo: BabyRepositoryProtocol?
@@ -211,7 +212,7 @@ class RiwayatViewModel: ObservableObject {
               weight > 0, height > 0
         else { return }
         
-        let measurement = GrowthMeasurement(weightKg: weight, heightCm: height)
+        let measurement = GrowthMeasurement(weightKg: weight, heightCm: height, date: selectedDate)
         baby.measurements.append(measurement)
         
         do {
@@ -224,6 +225,7 @@ class RiwayatViewModel: ObservableObject {
             loadBaby()
             inputWeight = ""
             inputHeight = ""
+            selectedDate = Date()
             showInputSheet = false
             UINotificationFeedbackGenerator().notificationOccurred(.success)
         } catch {

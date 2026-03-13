@@ -222,7 +222,7 @@ struct RiwayatView: View {
             HStack(spacing: 8) {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 18))
-                Text("Input Data Terbaru")
+                Text("Input Data Pertumbuhan")
                     .font(AppFonts.ctaText())
             }
             .foregroundColor(.white)

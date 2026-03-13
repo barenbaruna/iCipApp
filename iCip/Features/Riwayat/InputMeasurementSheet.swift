@@ -31,22 +31,31 @@ struct InputMeasurementSheet: View {
                     .font(AppFonts.heading2())
                     .foregroundColor(AppColors.textDark)
                 
-                Text("Catat berat dan tinggi badan si kecil hari ini")
+                Text("Catat berat dan tinggi badan si kecil")
                     .font(AppFonts.caption())
                     .foregroundColor(AppColors.textMidGray)
                 
-                // Date display
-                HStack(spacing: 8) {
-                    Image(systemName: "calendar")
-                        .foregroundColor(AppColors.orangeMain)
-                    Text(Date().formatted(.dateTime.day().month(.wide).year()))
-                        .font(AppFonts.bodyRegular())
-                        .foregroundColor(AppColors.textDark)
+                // Date picker
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "calendar")
+                            .foregroundColor(AppColors.orangeMain)
+                        Text("Tanggal Pengukuran")
+                            .font(AppFonts.caption())
+                            .foregroundColor(AppColors.textMidGray)
+                        Spacer()
+                    }
+                    
+                    DatePicker(
+                        "",
+                        selection: $viewModel.selectedDate,
+                        in: (viewModel.currentBaby?.dateOfBirth ?? Date())...Date(),
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+                    .tint(AppColors.orangeMain)
                 }
-                .padding(12)
-                .frame(maxWidth: .infinity)
-                .background(AppColors.surfaceGray)
-                .cornerRadius(12)
                 
                 // Input fields
                 VStack(spacing: 16) {
