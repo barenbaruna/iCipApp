@@ -18,7 +18,7 @@ class FoodListViewModel: ObservableObject {
     @Published var allRecipes: [RecipeItem] = []
     
     // MARK: - Constants
-    let ageFilters = ["Semua", "6-8 bln", "9-11 bln", "12-24 bln"]
+    let ageFilters = ["Semua", "6-8 bln", "9-11 bln", "12-23 bln"]
     
     // MARK: - Dependencies
     private let recipeRepo = LocalRecipeRepository.shared
