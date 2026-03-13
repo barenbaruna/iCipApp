@@ -35,7 +35,7 @@ struct FoodListView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("Eksplorasi")
+                    Text("Menu")
                         .font(.system(size: 26, weight: .bold))
                         .foregroundColor(AppColors.textDark)
                 }
@@ -76,36 +76,35 @@ struct FoodListView: View {
                     }
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 24)
+            .padding(.top, 4)
+            .padding(.bottom, 16)
         }
     }
 
     // MARK: - Recipe Grid
     private var recipeGrid: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 14),
-                    GridItem(.flexible(), spacing: 14),
-                ],
-                spacing: 14
-            ) {
-                ForEach(Array(viewModel.filteredRecipes.enumerated()), id: \.element.id) {
-                    index, recipe in
-                    NavigationLink(destination: FoodDetailView(recipe: recipe, conflicts: [])) {
-                        foodGridCard(recipe: recipe)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .opacity(animateGrid ? 1 : 0)
-                    .offset(y: animateGrid ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.4).delay(Double(index) * 0.05), value: animateGrid)
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: 14),
+                GridItem(.flexible(), spacing: 14),
+            ],
+            spacing: 14
+        ) {
+            ForEach(Array(viewModel.filteredRecipes.enumerated()), id: \.element.id) {
+                index, recipe in
+                NavigationLink(destination: FoodDetailView(recipe: recipe, conflicts: [])) {
+                    foodGridCard(recipe: recipe)
                 }
+                .buttonStyle(PlainButtonStyle())
+                .opacity(animateGrid ? 1 : 0)
+                .offset(y: animateGrid ? 0 : 20)
+                .animation(
+                    .easeOut(duration: 0.4).delay(Double(index) * 0.05), value: animateGrid)
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 100)
         }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 100)
     }
 
     // MARK: - Grid Card
