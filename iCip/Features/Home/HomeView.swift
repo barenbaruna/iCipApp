@@ -301,13 +301,14 @@ struct HomeView: View {
     // MARK: - Helpers
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        if hour < 12 {
+        if hour >= 4 && hour < 11 {
             return "Selamat Pagi"
-        } else if hour < 17 {
+        } else if hour >= 11 && hour < 15 {
             return "Selamat Siang"
-        } else {
+        } else if hour >= 15 && hour < 18 {
             return "Selamat Sore"
         }
+        return "Selamat Malam"
     }
 }
 

@@ -40,7 +40,7 @@ class FoodListViewModel: ObservableObject {
             result = result.filter { $0.ageMinimumMonths <= 8 && $0.ageMaximumMonths >= 6 }
         case "9-11 bln":
             result = result.filter { $0.ageMinimumMonths <= 11 && $0.ageMaximumMonths >= 9 }
-        case "12-24 bln":
+        case "12-23 bln":
             result = result.filter { $0.ageMinimumMonths <= 24 && $0.ageMaximumMonths >= 12 }
         default:
             break

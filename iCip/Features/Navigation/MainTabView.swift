@@ -24,7 +24,7 @@ struct MainTabView: View {
             
             FoodListView()
                 .tabItem {
-                    Label("Eksplorasi", systemImage: "fork.knife")
+                    Label("Menu", systemImage: "fork.knife")
                 }
                 .tag(1)
             

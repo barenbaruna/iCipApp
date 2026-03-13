@@ -21,6 +21,12 @@ struct RecommendationReason {
 // MARK: - Home ViewModel
 @MainActor
 class HomeViewModel: ObservableObject {
+
+    private struct RecipeLogSignal {
+        let totalTries: Int
+        let latestReaction: String?
+        let lastTriedDate: Date?
+    }
     
     // MARK: - Published Properties
     @Published var recommendedRecipes: [RecipeItem] = []
@@ -45,11 +51,12 @@ class HomeViewModel: ObservableObject {
             let ageInMonths = baby.ageInMonths
             
             let ageAppropriateRecipes = try recipeRepo.getRecipes(forAgeMonths: max(ageInMonths, 6))
+            let reactionSignals = buildReactionSignals(from: baby.foodLogs)
             
             // Score and sort recipes based on baby's nutritional needs
-            let scoredRecipes = scoreRecipes(ageAppropriateRecipes, for: baby)
+            let scoredRecipes = scoreRecipes(ageAppropriateRecipes, for: baby, signals: reactionSignals)
             self.recommendedRecipes = scoredRecipes
-            generateReasons(for: scoredRecipes, baby: baby)
+            generateReasons(for: scoredRecipes, baby: baby, signals: reactionSignals)
         } catch {
             print("Failed fetching data: \(error)")
         }
@@ -58,7 +65,7 @@ class HomeViewModel: ObservableObject {
     // MARK: - Scoring Engine
     
     /// Scores recipes based on baby's growth status and nutritional needs.
-    private func scoreRecipes(_ recipes: [RecipeItem], for baby: Baby) -> [RecipeItem] {
+    private func scoreRecipes(_ recipes: [RecipeItem], for baby: Baby, signals: [String: RecipeLogSignal]) -> [RecipeItem] {
         let status = growthStatusForBaby(baby)
         let allProtein = recipes.map { $0.protein }
         let avgProtein = allProtein.isEmpty ? 4.0 : allProtein.reduce(0, +) / Double(allProtein.count)
@@ -70,6 +77,11 @@ class HomeViewModel: ObservableObject {
         let scored: [(recipe: RecipeItem, score: Double)] = recipes.map { recipe in
             var score: Double = 0
             let hasConflict = !getConflictingAllergens(for: recipe).isEmpty
+            let signal = signals[recipe.id]
+
+            if hasConflict {
+                return (recipe: recipe, score: -999)
+            }
             
             switch status {
             case .stuntingRisk:
@@ -132,18 +144,45 @@ class HomeViewModel: ObservableObject {
                 }.count
                 score += Double(veggieCount) * 10
             }
-            
-            // Penalize if allergy conflict exists
-            if hasConflict { score -= 15 }
+
+            if let signal = signal {
+                switch signal.latestReaction {
+                case "Alergi":
+                    // Safety first: never promote repeated exposure after potential allergy.
+                    score -= 120
+                case "Suka":
+                    // Positive prior acceptance, with gentle dampening to preserve variety.
+                    score += max(4, 14 - Double(signal.totalTries * 2))
+                case "Tidak Suka":
+                    if shouldRetryDislikedFood(signal) {
+                        // Repeated exposure can improve acceptance for non-allergic rejection.
+                        score += 10
+                    } else {
+                        score -= 10
+                    }
+                default:
+                    break
+                }
+            } else {
+                // New foods get a small novelty bonus for variety.
+                score += 6
+            }
             
             return (recipe: recipe, score: score)
         }
         
-        return scored.sorted(by: { $0.score > $1.score }).map { $0.recipe }
+        return scored
+            .filter { item in
+                let latestReaction = signals[item.recipe.id]?.latestReaction
+                let hasProfileAllergenConflict = !getConflictingAllergens(for: item.recipe).isEmpty
+                return latestReaction != "Alergi" && !hasProfileAllergenConflict
+            }
+            .sorted(by: { $0.score > $1.score })
+            .map { $0.recipe }
     }
     
     /// Generates human-readable recommendation reasons for each recipe.
-    private func generateReasons(for recipes: [RecipeItem], baby: Baby) {
+    private func generateReasons(for recipes: [RecipeItem], baby: Baby, signals: [String: RecipeLogSignal]) {
         let status = growthStatusForBaby(baby)
         var reasons: [String: RecommendationReason] = [:]
         let allProtein = recipes.map { $0.protein }
@@ -155,6 +194,17 @@ class HomeViewModel: ObservableObject {
         
         for (index, recipe) in recipes.enumerated() {
             let isTopRecommendation = index < 3
+            let signal = signals[recipe.id]
+
+            if let signal = signal, signal.latestReaction == "Tidak Suka", shouldRetryDislikedFood(signal) {
+                reasons[recipe.id] = RecommendationReason(
+                    tag: "Coba Lagi Bertahap",
+                    reason: "Respon sebelumnya belum suka. Ulangi porsi kecil tiap 2-3 hari untuk membangun penerimaan rasa secara bertahap.",
+                    icon: "arrow.clockwise.circle.fill",
+                    isHighlyRecommended: isTopRecommendation && index < 2
+                )
+                continue
+            }
             
             let reason: RecommendationReason
             switch status {
@@ -263,6 +313,29 @@ class HomeViewModel: ObservableObject {
         
         self.recipeReasons = reasons
     }
+
+    private func buildReactionSignals(from logs: [FoodLog]) -> [String: RecipeLogSignal] {
+        let grouped = Dictionary(grouping: logs) { $0.recipeId }
+        var result: [String: RecipeLogSignal] = [:]
+
+        for (recipeId, recipeLogs) in grouped {
+            let sorted = recipeLogs.sorted(by: { $0.date > $1.date })
+            result[recipeId] = RecipeLogSignal(
+                totalTries: recipeLogs.count,
+                latestReaction: sorted.first?.reaction,
+                lastTriedDate: sorted.first?.date
+            )
+        }
+
+        return result
+    }
+
+    private func shouldRetryDislikedFood(_ signal: RecipeLogSignal) -> Bool {
+        guard signal.latestReaction == "Tidak Suka" else { return false }
+        guard signal.totalTries < 10 else { return false }
+        guard let lastTriedDate = signal.lastTriedDate else { return true }
+        return Calendar.current.dateComponents([.day], from: lastTriedDate, to: Date()).day ?? 0 >= 2
+    }
     
     /// Calculates growth status for a baby using latest measurement.
     private func growthStatusForBaby(_ baby: Baby) -> GrowthStatus {
@@ -270,8 +343,9 @@ class HomeViewModel: ObservableObject {
             return .normal
         }
         let isMale = baby.gender == "Laki-laki"
-        let wfaZ = WHOZScoreCalculator.weightForAgeZ(weightKg: m.weightKg, ageMonths: baby.ageInMonths, isMale: isMale)
-        let hfaZ = WHOZScoreCalculator.heightForAgeZ(heightCm: m.heightCm, ageMonths: baby.ageInMonths, isMale: isMale)
+        let measurementAgeMonths = baby.ageInMonths(at: m.date)
+        let wfaZ = WHOZScoreCalculator.weightForAgeZ(weightKg: m.weightKg, ageMonths: measurementAgeMonths, isMale: isMale)
+        let hfaZ = WHOZScoreCalculator.heightForAgeZ(heightCm: m.heightCm, ageMonths: measurementAgeMonths, isMale: isMale)
         let wfhZ = WHOZScoreCalculator.weightForHeightZ(weightKg: m.weightKg, heightCm: m.heightCm, isMale: isMale)
         return WHOZScoreCalculator.overallStatus(wfaZ: wfaZ, hfaZ: hfaZ, wfhZ: wfhZ)
     }

@@ -81,8 +81,8 @@ struct RecipeCardView: View {
                         icon: "flame.fill", value: "\(Int(recipe.calories))", unit: "kkal",
                         color: AppColors.orangeMain)
                     nutritionChip(
-                        icon: "drop.fill", value: String(format: "%.1f", recipe.protein), unit: "g",
-                        color: AppColors.infoBlue)
+                        icon: "fish.fill", value: String(format: "%.1f", recipe.protein), unit: "g",
+                        color: AppColors.greenMain)
                 }
 
                 // Reason tag or status badge
