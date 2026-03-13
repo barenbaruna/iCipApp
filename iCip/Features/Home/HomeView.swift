@@ -84,19 +84,46 @@ struct HomeView: View {
 
     // MARK: - Status + Stats Card (Combined)
     private func statusStatsCard(baby: Baby) -> some View {
-        VStack(spacing: 16) {
-            // Growth status badge
-            statusBadge
+        let latestMeasurement = baby.measurements.sorted(by: { $0.date < $1.date }).last
 
-            // Divider
-            Rectangle()
-                .fill(AppColors.surfaceGray)
-                .frame(height: 1)
-                .padding(.horizontal, 4)
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .center, spacing: 10) {
+                Text("Ringkasan Pertumbuhan")
+                    .font(AppFonts.heading3())
+                    .foregroundColor(AppColors.textDark)
 
-            // Baby stats row
-            HStack(spacing: 16) {
-                statItem(
+                Spacer()
+
+                if viewModel.hasMeasurementData {
+                    let status = viewModel.overallGrowthStatus
+                    HStack(spacing: 6) {
+                        Image(systemName: status.icon)
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(status.rawValue)
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundColor(status.color)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(status.tintColor)
+                    .clipShape(Capsule())
+                } else {
+                    Text("Belum ada data")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(AppColors.textMidGray)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(AppColors.surfaceGray)
+                        .clipShape(Capsule())
+                }
+            }
+
+            Text(viewModel.hasMeasurementData ? "Status, usia, tinggi, dan berat terbaru si kecil." : "Tambahkan data pengukuran untuk mendapatkan status pertumbuhan.")
+                .font(AppFonts.caption())
+                .foregroundColor(AppColors.textMidGray)
+
+            HStack(spacing: 10) {
+                metricTile(
                     label: "Usia",
                     value: "\(baby.ageInMonths)",
                     unit: "bulan",
@@ -104,22 +131,21 @@ struct HomeView: View {
                     color: AppColors.orangeMain
                 )
 
-                if let lastMeasurement = baby.measurements.sorted(by: { $0.date < $1.date }).last {
-                    statItem(
-                        label: "Tinggi",
-                        value: String(format: "%.1f", lastMeasurement.heightCm),
-                        unit: "cm",
-                        icon: "ruler.fill",
-                        color: AppColors.infoBlue
-                    )
-                    statItem(
-                        label: "Berat",
-                        value: String(format: "%.1f", lastMeasurement.weightKg),
-                        unit: "kg",
-                        icon: "scalemass.fill",
-                        color: AppColors.greenMain
-                    )
-                }
+                metricTile(
+                    label: "Tinggi",
+                    value: latestMeasurement.map { String(format: "%.1f", $0.heightCm) } ?? "—",
+                    unit: "cm",
+                    icon: "ruler.fill",
+                    color: AppColors.infoBlue
+                )
+
+                metricTile(
+                    label: "Berat",
+                    value: latestMeasurement.map { String(format: "%.1f", $0.weightKg) } ?? "—",
+                    unit: "kg",
+                    icon: "scalemass.fill",
+                    color: AppColors.greenMain
+                )
             }
         }
         .padding(16)
@@ -131,58 +157,34 @@ struct HomeView: View {
         .offset(y: animateStats ? 0 : 15)
     }
 
-    // MARK: - Status Badge
-    private var statusBadge: some View {
-        Group {
-            if viewModel.hasMeasurementData {
-                let status = viewModel.overallGrowthStatus
-                HStack(spacing: 10) {
-                    Image(systemName: status.icon)
-                        .font(.system(size: 18))
-                        .foregroundColor(status.color)
-
-                    Text(status.rawValue)
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundColor(AppColors.textDark)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(status.tintColor)
-                .cornerRadius(12)
-            } else {
-                HStack(spacing: 10) {
-                    Image(systemName: "questionmark.circle")
-                        .font(.system(size: 18))
-                        .foregroundColor(AppColors.textSubtleGray)
-
-                    Text("Belum ada data pengukuran")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(AppColors.textMidGray)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(AppColors.surfaceGray)
-                .cornerRadius(12)
-            }
-        }
-    }
-
-    // MARK: - Stat Item
-    private func statItem(label: String, value: String, unit: String, icon: String, color: Color)
+    // MARK: - Metric Tile
+    private func metricTile(label: String, value: String, unit: String, icon: String, color: Color)
         -> some View
     {
-        VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundColor(color)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(color)
+
+                Text(label)
+                    .font(AppFonts.caption())
+                    .foregroundColor(AppColors.textMidGray)
+            }
+
             Text(value)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundColor(AppColors.textDark)
+
             Text(unit)
                 .font(AppFonts.caption())
                 .foregroundColor(AppColors.textSubtleGray)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(AppColors.surfaceGray.opacity(0.9))
+        .cornerRadius(12)
     }
 
     // MARK: - Recommendation Carousel

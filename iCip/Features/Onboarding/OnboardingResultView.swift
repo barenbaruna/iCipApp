@@ -190,7 +190,7 @@ struct OnboardingResultView: View {
     }
     
     private func nutrientRow(nutrient: NutrientTarget) -> some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
                     .fill(nutrient.isCritical ? AppColors.orangeTint : AppColors.surfaceGray)
@@ -203,19 +203,24 @@ struct OnboardingResultView: View {
             Text(nutrient.name)
                 .font(AppFonts.bodyRegular())
                 .foregroundColor(AppColors.textDark)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
-            Spacer()
-            
-            HStack(spacing: 4) {
+            HStack(alignment: .top, spacing: 4) {
                 if nutrient.isCritical {
                     Image(systemName: "exclamationmark.circle.fill")
                         .font(.system(size: 12))
                         .foregroundColor(AppColors.orangeMain)
+                        .padding(.top, 2)
                 }
+
                 Text(nutrient.value)
                     .font(AppFonts.highlight())
                     .foregroundColor(nutrient.isCritical ? AppColors.orangeMain : AppColors.textDark)
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(minWidth: 120, maxWidth: 140, alignment: .trailing)
+            .layoutPriority(1)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
